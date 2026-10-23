@@ -1,0 +1,26 @@
+# Temporary: search open collections from a runner with open network. Remove before merge.
+name: assets-temp
+on:
+  push:
+    branches: [claude/ai-learning-nav-dev-kg0cp5]
+    paths: ['.taste-tools/**', '.github/workflows/assets-temp.yml']
+permissions:
+  contents: read
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Search
+        run: |
+          while IFS= read -r q; do
+            [ -z "$q" ] && continue
+            echo "=================== $q"
+            node .taste-tools/scripts/assets.mjs "$q" --limit 5 --orientation landscape --no-check --json \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);for(const r of (j.results||j)) console.log(JSON.stringify({ref:r.ref,title:r.title,creator:r.creator,license:r.license,w:r.width,h:r.height,src:r.source||r.provider,page:r.page}))}catch(e){console.log(s.slice(0,3000))}})'
+          done < .taste-tools/queries.txt
+      - name: Fontshare CSS
+        run: curl -sS "https://api.fontshare.com/v2/css?f[]=general-sans@400,500,700&display=swap" | head -40
