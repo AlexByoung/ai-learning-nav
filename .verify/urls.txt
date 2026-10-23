@@ -1,21 +1,31 @@
-https://cs2680.com
-https://karpathy.ai/zero-to-hero.html
-https://stanford-cs336.github.io/
-https://stanford-cs336.github.io/spring2025/
-https://stanford-cs336.github.io/spring2026/
-https://cs336.stanford.edu/
-https://web.stanford.edu/class/cs224n/
-https://llmagents-learning.org/f24
-https://llmagents-learning.org/sp25
-https://rdi.berkeley.edu/agentic-ai/f25
-https://rdi.berkeley.edu/llm-agents/f24
-https://rdi.berkeley.edu/adv-llm-agents/sp25
-https://dlsyscourse.org/
-https://dlsyscourse.org/lectures/
-https://hanlab.mit.edu/courses/2024-fall-65940
-https://hanlab.mit.edu/courses/2026-fall-65940
-https://efficientml.ai/
-https://course.fast.ai/
-https://huggingface.co/learn/agents-course/unit0/introduction
-https://huggingface.co/learn/agents-course
-https://www.3blue1brown.com/topics/neural-networks
+https://cs2680.com | Juncheng, Harvard, slides, assignment, notes, Fall 2026, youtube
+https://www.3blue1brown.com/lessons/neural-networks | neural
+https://www.3blue1brown.com/topics/neural-networks | neural, Neural Networks
+https://agenticai-learning.org/f25 | Agentic
+https://rdi.berkeley.edu/agentic-ai/f25 | MOOC, Dawn Song, free, slides, playlist
+https://dlsyscourse.org/ | Carnegie, CMU, Kolter, Tianqi, online, free
+https://hanlab.mit.edu/courses/2026-fall-65940 | Song Han, playlist, YouTube, 2024, lecture
+https://huggingface.co/learn/agents-course/unit0/introduction | free, certificate, smolagents, LangGraph, LlamaIndex, youtube
+https://course.fast.ai/ | free, Jeremy Howard
+https://web.stanford.edu/class/cs224n/ | Manning, Lecture Videos, 2024, 2023, 2021
+https://cs336.stanford.edu/ | YouTube playlist
+https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV | CS336
+https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ | Zero to Hero
+https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi | Neural
+oembed https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV
+oembed https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ
+oembed https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi
+oembed https://www.youtube.com/playlist?list=PLoROMvodv4rOaMFbaqxPDoLWjDaRAdP9D
+oembed https://www.youtube.com/playlist?list=PLoROMvodv4rMFqRtEuo6SGjY4XbRIVRd4
+oembed https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ
+oembed https://www.youtube.com/playlist?list=PLoROMvodv4rOhcuXMZkNm7j3fVwBBY42z
+oembed https://www.youtube.com/playlist?list=PLS01nW3RtgoqGkm4UeqNeZLccW-OGc1fJ
+oembed https://www.youtube.com/playlist?list=PLfYUBJiXbdtSvpQjSnJJ_PmDQB_VyT5iU
+oembed https://www.youtube.com/watch?v=VMj-3S1tku0
+oembed https://www.youtube.com/watch?v=EWvNQjAaOHw
+oembed https://www.youtube.com/watch?v=LCEmiRjPEtQ
+oembed https://youtu.be/ftP5HeOvsI0
+oembed https://youtu.be/U7EPZv8Kh9w
+oembed https://youtu.be/tY75czj43_4
+oembed https://www.youtube.com/watch?v=CzGTQseaM38
+oembed https://www.youtube.com/watch?v=r1qZpYAmqmg
