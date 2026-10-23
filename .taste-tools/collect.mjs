@@ -12,7 +12,7 @@ for (const line of queries) {
     out = execFileSync('node', ['.taste-tools/scripts/assets.mjs', q, '--limit', '6', '--no-check', '--json', ...(video ? ['--video'] : [])], { encoding: 'utf8', maxBuffer: 64e6, timeout: 240000 });
   } catch (e) { out = e.stdout || ''; }
   let items = [];
-  try { items = JSON.parse(out).items ?? []; } catch {}
+  try { items = (JSON.parse(out).sources ?? []).flatMap((src) => src.items ?? []).slice(0, 8); } catch (e) { console.log('parse failed for', q, out.slice(0, 300)); }
   let n = 0;
   for (const it of items) {
     const slug = `${q.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${n++}`;

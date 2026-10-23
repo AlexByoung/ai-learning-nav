@@ -40,6 +40,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .taste-tools/candidates src/assets/fonts public/archive 2>/dev/null || true
+          for d in .taste-tools/candidates src/assets/fonts public/archive; do [ -e "$d" ] && git add "$d"; done
           git commit -m "Temporary: picture candidates and fonts from runner" || echo "nothing to commit"
           git push
