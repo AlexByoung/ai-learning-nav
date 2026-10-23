@@ -100,7 +100,7 @@ npm run check-links -- --node            # 强制使用内置检查器
 
 ## 部署
 
-push 到 `main` 时 `.github/workflows/deploy.yml` 自动 build 并用 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布到 GitHub Pages（repo 的 Pages Source 需设为 GitHub Actions）。Pull request 只跑 build，不部署。
+push 到 `main` 时 `.github/workflows/deploy.yml` 自动 build 并用 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布到 GitHub Pages（repo 的 Pages Source 需设为 GitHub Actions）。Pull request 只跑 build，不部署。部署完成后 `smoke-test` job 会实际请求线上首页、课程页、路线页以及它们引用的全部 CSS/JS/字体/图片，任何一个不是 200 就让这次 run 失败。本地也可以对预览服务器运行：`npm run preview` 后执行 `npm run smoke-test -- http://localhost:4321/ai-learning-nav/`。
 
 ## 目录结构
 
