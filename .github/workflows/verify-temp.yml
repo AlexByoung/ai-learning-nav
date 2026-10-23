@@ -1,0 +1,16 @@
+name: verify-temp
+on:
+  push:
+    branches: [claude/ai-learning-nav-dev-kg0cp5]
+    paths: ['.verify/**', '.github/workflows/verify-temp.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node .verify/inspect.mjs .verify/urls.txt
