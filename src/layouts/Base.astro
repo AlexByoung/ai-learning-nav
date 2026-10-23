@@ -1,0 +1,447 @@
+---
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import '../styles/global.css';
+import Banner from '../components/Banner.astro';
+import Icon from '../components/Icon.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { t } from '../i18n';
+import { withBase } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+  home?: boolean;
+}
+
+const { title, description = t.site.tagline, home = false } = Astro.props;
+const fullTitle = title ? `${title} · ${t.site.name}` : t.site.name;
+const current = Astro.url.pathname;
+const nav = [
+  { href: withBase(''), label: t.nav.home, icon: 'home-outline-rounded', active: current === withBase('') },
+  { href: withBase('courses/'), label: t.nav.courses, icon: 'auto-stories-outline-rounded', active: current.startsWith(withBase('courses/')) },
+  { href: withBase('paths/'), label: t.nav.paths, icon: 'route-outline', active: current.startsWith(withBase('paths/')) },
+];
+---
+
+<!doctype html>
+<html lang={t.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <title>{fullTitle}</title>
+    <script is:inline>
+      // Apply saved theme + hue before first paint to avoid a flash.
+      try {
+        var d = document.documentElement;
+        var theme = localStorage.getItem('ai-learning-nav:theme');
+        if (theme === 'light' || theme === 'dark') d.dataset.theme = theme;
+        var hue = localStorage.getItem('ai-learning-nav:hue');
+        if (hue !== null && /^\d{1,3}$/.test(hue)) d.style.setProperty('--hue', hue);
+      } catch (e) {}
+    </script>
+  </head>
+  <body class:list={{ 'is-home': home }}>
+    <a class="skip-link" href="#main">{t.nav.skip}</a>
+    <Banner home={home} />
+
+    <header class="top-row">
+      <div class="navbar card-base onload-animation">
+        <a class="brand btn-plain" href={withBase('')}>
+          <Icon name="school-outline-rounded" class="brand-icon" />
+          <span class="brand-text">{t.site.name}</span>
+        </a>
+        <nav aria-label={t.nav.menuLabel}>
+          {
+            nav.map((item) => (
+              <a class="btn-plain nav-link" href={item.href} aria-current={item.active ? 'page' : undefined}>
+                <Icon name={item.icon} class="nav-icon" />
+                <span>{item.label}</span>
+              </a>
+            ))
+          }
+        </nav>
+        <div class="tools">
+          <button class="btn-plain tool" type="button" data-hue-toggle aria-label={t.theme.hueLabel} aria-expanded="false" aria-controls="hue-panel">
+            <Icon name="palette-outline" />
+          </button>
+          <button
+            class="btn-plain tool"
+            type="button"
+            data-theme-toggle
+            data-label-auto={t.theme.auto}
+            data-label-light={t.theme.light}
+            data-label-dark={t.theme.dark}
+            data-label-base={t.theme.label}
+            aria-label={`${t.theme.label}：${t.theme.auto}`}
+            title={t.theme.auto}
+          >
+            <span data-theme-icon="auto"><Icon name="brightness-auto-outline-rounded" /></span>
+            <span data-theme-icon="light" hidden><Icon name="light-mode-outline-rounded" /></span>
+            <span data-theme-icon="dark" hidden><Icon name="dark-mode-outline-rounded" /></span>
+          </button>
+        </div>
+        <div id="hue-panel" class="hue-panel" data-hue-panel hidden>
+          <div class="hue-head">
+            <span class="bar-title">{t.theme.hue}</span>
+            <button class="btn-regular hue-reset" type="button" data-hue-reset aria-label={t.theme.reset} title={t.theme.reset}>
+              <Icon name="restart-alt-rounded" />
+            </button>
+            <output class="hue-value" data-hue-value>165</output>
+          </div>
+          <input class="hue-slider" type="range" min="0" max="360" step="5" value="165" aria-label={t.theme.hue} data-hue-input />
+        </div>
+      </div>
+    </header>
+
+    {
+      home && (
+        <div class="hero onload-animation">
+          <h1>{t.site.name}</h1>
+          <p>{t.site.tagline}</p>
+        </div>
+      )
+    }
+
+    <div class="page">
+      <div class="main-grid">
+        <main id="main" class="content onload-animation">
+          <slot />
+        </main>
+        <aside class="sidebar onload-animation">
+          <Sidebar />
+        </aside>
+      </div>
+      <footer class="footer onload-animation">
+        <hr class="divider-dashed" />
+        <p>{t.site.disclaimer}</p>
+        <p>
+          {t.site.themeCredit} · <a href="https://github.com/AlexByoung/ai-learning-nav" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      import '../scripts/theme';
+      import '../scripts/progress';
+    </script>
+  </body>
+</html>
+
+<style>
+  body {
+    position: relative;
+  }
+
+  .is-home {
+    --banner-height: 46vh;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 8px;
+    top: -60px;
+    z-index: 100;
+    padding: 8px 12px;
+    border-radius: 0.5rem;
+    background: var(--card-bg);
+  }
+
+  .skip-link:focus {
+    top: 8px;
+  }
+
+  .top-row {
+    position: relative;
+    z-index: 50;
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+
+  .navbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 4.5rem;
+    padding: 0 0.75rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    overflow: visible;
+  }
+
+  .brand {
+    height: 3.25rem;
+    padding: 0 0.9rem;
+    border-radius: 0.6rem;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-right: auto;
+  }
+
+  .brand :global(.brand-icon) {
+    font-size: 1.6rem;
+  }
+
+  .brand:hover {
+    color: var(--primary);
+  }
+
+  nav {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    height: 2.75rem;
+    padding: 0 1rem;
+    border-radius: 0.6rem;
+    font-weight: 700;
+  }
+
+  .nav-link :global(.nav-icon) {
+    display: none;
+    font-size: 1.3rem;
+  }
+
+  .tools {
+    display: flex;
+    margin-left: 0.25rem;
+  }
+
+  .tool {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.6rem;
+    font-size: 1.25rem;
+  }
+
+  .tool span {
+    display: inline-flex;
+  }
+
+  .tool span[hidden] {
+    display: none;
+  }
+
+  .hue-panel {
+    position: absolute;
+    right: 0.75rem;
+    top: calc(100% + 0.5rem);
+    width: min(20rem, calc(100vw - 2rem));
+    padding: 1rem;
+    border-radius: var(--radius-large);
+    background: var(--float-panel-bg);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .hue-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hue-head .bar-title {
+    margin-left: 0.25rem;
+    margin-right: auto;
+    font-size: 1rem;
+  }
+
+  .hue-reset {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.4rem;
+  }
+
+  .hue-value {
+    min-width: 2.75rem;
+    height: 1.75rem;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    background: var(--btn-regular-bg);
+    color: var(--btn-content);
+  }
+
+  .hue-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1.5rem;
+    margin: 0;
+    border-radius: 0.3rem;
+    background: var(--rainbow);
+    cursor: pointer;
+  }
+
+  .hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 0.5rem;
+    height: 1rem;
+    border-radius: 0.125rem;
+    background: rgb(255 255 255 / 0.8);
+  }
+
+  .hue-slider::-moz-range-thumb {
+    width: 0.5rem;
+    height: 1rem;
+    border: 0;
+    border-radius: 0.125rem;
+    background: rgb(255 255 255 / 0.8);
+  }
+
+  .hero {
+    position: relative;
+    z-index: 10;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: calc(var(--banner-height) - 4.5rem - var(--overlap));
+    min-height: 8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+    text-shadow: 0 2px 12px rgb(0 0 0 / 0.18);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .hero p {
+    margin-top: 0.5rem;
+    max-width: 42rem;
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    opacity: 0.92;
+  }
+
+  .page {
+    position: relative;
+    z-index: 20;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 0 2rem;
+  }
+
+  body:not(.is-home) .page {
+    padding-top: max(calc(var(--banner-height) - 4.5rem - var(--overlap)), 1.5rem);
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .sidebar {
+    animation-delay: 100ms;
+  }
+
+  .content {
+    animation-delay: 150ms;
+    min-width: 0;
+  }
+
+  .footer {
+    animation-delay: 250ms;
+    margin-top: 2rem;
+    padding: 0 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-50);
+  }
+
+  .footer hr {
+    margin-bottom: 1.25rem;
+  }
+
+  .footer p + p {
+    margin-top: 0.25rem;
+  }
+
+  .footer a {
+    color: var(--text-75);
+  }
+
+  .footer a:hover {
+    color: var(--primary);
+  }
+
+  @media (max-width: 767px) {
+    .hero,
+    .page {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .top-row,
+    .hero,
+    .page {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .hero {
+      padding-left: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .main-grid {
+      grid-template-columns: 17.5rem minmax(0, 1fr);
+    }
+    .sidebar {
+      grid-row: 1;
+      grid-column: 1;
+    }
+    .content {
+      grid-column: 2;
+    }
+    .sidebar :global(.sidebar-inner) {
+      position: sticky;
+      top: 1rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .navbar {
+      padding: 0 0.5rem;
+      height: 4rem;
+    }
+    .brand {
+      padding: 0 0.6rem;
+    }
+    .nav-link {
+      padding: 0 0.7rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .brand-text {
+      display: none;
+    }
+    .nav-link {
+      width: 2.75rem;
+      padding: 0;
+    }
+    .nav-link span {
+      display: none;
+    }
+    .nav-link :global(.nav-icon) {
+      display: inline-block;
+    }
+  }
+</style>

@@ -1,0 +1,309 @@
+---
+import Base from '../../layouts/Base.astro';
+import CourseCard from '../../components/CourseCard.astro';
+import Icon from '../../components/Icon.astro';
+import { t } from '../../i18n';
+import { CATEGORIES, LEVELS } from '../../data/taxonomy';
+import { getCourses } from '../../lib/data';
+
+const courses = await getCourses();
+const groups = [
+  { name: 'category', label: t.courses.categoryLabel, options: CATEGORIES.map((c) => ({ value: c, label: t.categories[c].name })) },
+  { name: 'level', label: t.courses.levelLabel, options: LEVELS.map((l) => ({ value: l, label: t.levels[l] })) },
+];
+---
+
+<Base title={t.courses.title} description={t.courses.intro}>
+  <div class="card-base filters" data-filters>
+    <div class="filters-head">
+      <h1 class="bar-title">{t.courses.title}</h1>
+      <p class="count text-50" aria-live="polite" data-result-count>
+        {t.courses.resultCount(courses.length, courses.length)}
+      </p>
+    </div>
+    <p class="intro text-50">{t.courses.intro}</p>
+
+    <label class="search">
+      <Icon name="search-rounded" class="search-icon" />
+      <span class="visually-hidden">{t.courses.searchLabel}</span>
+      <input type="search" name="q" placeholder={t.courses.searchPlaceholder} autocomplete="off" enterkeyhint="search" data-search-input />
+    </label>
+
+    {
+      groups.map((g) => (
+        <div class="group" role="group" aria-label={g.label}>
+          <span class="group-label text-50">{g.label}</span>
+          <div class="chips" data-chip-group={g.name}>
+            <button type="button" class="chip-toggle" data-value="" aria-pressed="true">
+              {t.courses.all}
+            </button>
+            {g.options.map((o) => (
+              <button type="button" class="chip-toggle" data-value={o.value} aria-pressed="false">
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+
+    <div class="group" role="group" aria-label={t.courses.otherLabel}>
+      <span class="group-label text-50">{t.courses.otherLabel}</span>
+      <div class="chips">
+        <button type="button" class="chip-toggle" data-flag="video" aria-pressed="false">
+          <Icon name="smart-display-outline-rounded" />{t.courses.hasVideo}
+        </button>
+        <button type="button" class="chip-toggle" data-flag="free" aria-pressed="false">
+          <Icon name="check-circle-outline-rounded" />{t.courses.freeOnly}
+        </button>
+        <button type="button" class="btn-plain reset" data-reset>
+          <Icon name="restart-alt-rounded" />{t.courses.reset}
+        </button>
+      </div>
+    </div>
+    <noscript><p class="text-50">{t.courses.noscript}</p></noscript>
+  </div>
+
+  <div class="grid" data-course-grid>
+    {courses.map((course) => <CourseCard course={course} />)}
+  </div>
+  <p class="card-base empty text-50" data-empty hidden>{t.courses.empty}</p>
+</Base>
+
+<script>
+  import { t } from '../../i18n';
+
+  type Filters = { q: string; category: string; level: string; video: boolean; free: boolean };
+
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-course-grid] [data-course-id]')];
+  const count = document.querySelector<HTMLElement>('[data-result-count]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const search = document.querySelector<HTMLInputElement>('[data-search-input]')!;
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-chip-group]')];
+  const flags = [...document.querySelectorAll<HTMLButtonElement>('[data-flag]')];
+
+  function readUrl(): Filters {
+    const p = new URLSearchParams(location.search);
+    return { q: p.get('q') ?? '', category: p.get('category') ?? '', level: p.get('level') ?? '', video: p.get('video') === '1', free: p.get('free') === '1' };
+  }
+
+  let state = readUrl();
+
+  function render() {
+    // Reflect state in the controls; unknown values fall back to "all".
+    search.value = state.q;
+    for (const group of groups) {
+      const key = group.dataset.chipGroup as 'category' | 'level';
+      const buttons = [...group.querySelectorAll<HTMLButtonElement>('button')];
+      if (!buttons.some((b) => b.dataset.value === state[key])) state[key] = '';
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.value === state[key]));
+    }
+    for (const b of flags) b.setAttribute('aria-pressed', String(state[b.dataset.flag as 'video' | 'free']));
+
+    const terms = state.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const card of cards) {
+      const ok =
+        (!state.category || card.dataset.category === state.category) &&
+        (!state.level || card.dataset.level === state.level) &&
+        (!state.video || card.dataset.video === 'true') &&
+        (!state.free || card.dataset.free === 'true') &&
+        terms.every((term) => (card.dataset.search ?? '').includes(term));
+      card.hidden = !ok;
+      if (ok) shown++;
+    }
+    count.textContent = t.courses.resultCount(shown, cards.length);
+    empty.hidden = shown > 0;
+
+    const next = new URLSearchParams();
+    if (state.q.trim()) next.set('q', state.q.trim());
+    if (state.category) next.set('category', state.category);
+    if (state.level) next.set('level', state.level);
+    if (state.video) next.set('video', '1');
+    if (state.free) next.set('free', '1');
+    const qs = next.toString();
+    history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+  }
+
+  search.addEventListener('input', () => {
+    state.q = search.value;
+    render();
+  });
+  for (const group of groups) {
+    group.addEventListener('click', (event) => {
+      const btn = (event.target as Element).closest<HTMLButtonElement>('button[data-value]');
+      if (!btn) return;
+      state[group.dataset.chipGroup as 'category' | 'level'] = btn.dataset.value ?? '';
+      render();
+    });
+  }
+  for (const b of flags) {
+    b.addEventListener('click', () => {
+      const key = b.dataset.flag as 'video' | 'free';
+      state[key] = !state[key];
+      render();
+    });
+  }
+  document.querySelector('[data-reset]')!.addEventListener('click', () => {
+    state = { q: '', category: '', level: '', video: false, free: false };
+    render();
+  });
+
+  // Sidebar category / level links: filter in place instead of reloading.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-filter-link]')) {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const key = link.dataset.filterLink as 'category' | 'level';
+      state[key] = state[key] === link.dataset.value ? '' : (link.dataset.value ?? '');
+      render();
+      document.querySelector('[data-filters]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  render();
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    scroll-margin-top: 1rem;
+  }
+
+  .filters-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .filters-head h1 {
+    font-size: 1.35rem;
+  }
+
+  .count {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .intro {
+    font-size: 0.9rem;
+    margin-top: -0.5rem;
+  }
+
+  .search {
+    position: relative;
+    display: block;
+  }
+
+  .search :global(.search-icon) {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    color: var(--text-50);
+    pointer-events: none;
+  }
+
+  .search input {
+    width: 100%;
+    height: 2.9rem;
+    padding: 0 1rem 0 2.6rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--btn-regular-bg);
+    color: var(--text-90);
+    font: inherit;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    outline: none;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .search input::placeholder {
+    color: var(--text-50);
+  }
+
+  .search input:focus {
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+
+  .group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .group-label {
+    flex: none;
+    width: 2.5rem;
+    font-size: 0.85rem;
+    line-height: 2.25rem;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .chip-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 2.25rem;
+    padding: 0 0.85rem;
+    border: 0;
+    border-radius: 0.6rem;
+    background: var(--btn-regular-bg);
+    color: var(--btn-content);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+
+  .chip-toggle:hover {
+    background: var(--btn-regular-bg-hover);
+  }
+
+  .chip-toggle:active {
+    transform: scale(0.95);
+  }
+
+  .chip-toggle[aria-pressed='true'] {
+    background: var(--primary);
+    color: var(--card-bg);
+    font-weight: 700;
+  }
+
+  .reset {
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border-radius: 0.6rem;
+    font-size: 0.875rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .grid :global([data-course-id][hidden]) {
+    display: none;
+  }
+
+  .empty {
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+</style>

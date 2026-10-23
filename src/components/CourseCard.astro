@@ -1,0 +1,312 @@
+---
+import Icon from './Icon.astro';
+import { t } from '../i18n';
+import { CATEGORY_ICONS, PROGRESS_STATES } from '../data/taxonomy';
+import { formatDate, hasVideo, type Course } from '../lib/data';
+
+interface Props {
+  course: Course;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { course, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+const category = t.categories[course.category];
+const searchText = [
+  course.title,
+  course.provider,
+  course.summary_zh,
+  course.why,
+  course.term ?? '',
+  category.name,
+  t.levels[course.level],
+  ...course.prerequisites,
+  ...course.formats.map((f) => t.formats[f]),
+]
+  .join(' ')
+  .toLowerCase();
+const links = [
+  { href: course.links.official, label: t.card.official, icon: 'open-in-new-rounded', kind: 'official' },
+  course.links.youtube && { href: course.links.youtube, label: t.card.youtube, icon: 'smart-display-outline-rounded', kind: 'youtube' },
+  course.links.other && { href: course.links.other, label: t.card.other, icon: 'link-rounded', kind: 'other' },
+].filter(Boolean) as { href: string; label: string; icon: string; kind: string }[];
+---
+
+<article
+  class="card-base course"
+  id={`course-${course.id}`}
+  data-course-id={course.id}
+  data-category={course.category}
+  data-level={course.level}
+  data-video={String(hasVideo(course))}
+  data-free={String(course.free)}
+  data-search={searchText}
+>
+  <div class="head">
+    <span class={`level-badge level-${course.level}`}>{t.levels[course.level]}</span>
+    <span class="cat text-50"><Icon name={CATEGORY_ICONS[course.category]} />{category.short}</span>
+    <span class="state-pill" data-state-pill></span>
+  </div>
+
+  <Heading class="title">{course.title}</Heading>
+
+  <div class="meta text-50">
+    <span class="meta-item"><span class="meta-icon"><Icon name="school-outline-rounded" /></span>{course.provider}</span>
+    {course.term && <span class="meta-item"><span class="meta-icon"><Icon name="calendar-today-outline-rounded" /></span>{course.term}</span>}
+  </div>
+
+  <p class="summary text-75">{course.summary_zh}</p>
+
+  <p class="why">
+    <span class="why-label">{t.card.why}</span>
+    <span class="text-75">{course.why}</span>
+  </p>
+
+  <ul class="tags" aria-label={t.card.formatsLabel}>
+    {course.formats.map((f) => <li class="btn-regular chip chip-dot">{t.formats[f]}</li>)}
+    {course.free && <li class="btn-regular chip chip-dot">{t.card.free}</li>}
+  </ul>
+
+  {
+    course.prerequisites.length > 0 && (
+      <p class="prereq text-50">
+        {t.card.prerequisites}：{course.prerequisites.join(' / ')}
+      </p>
+    )
+  }
+
+  <hr class="divider-dashed" />
+
+  <div class="foot">
+    <div class="links">
+      {
+        links.map((l) => (
+          <a class={`btn-regular link link-${l.kind}`} href={l.href} target="_blank" rel="noopener noreferrer">
+            <Icon name={l.icon} />
+            {l.label}
+            <span class="visually-hidden">{t.card.opensInNewTab}</span>
+          </a>
+        ))
+      }
+    </div>
+    <div class="progress" role="group" aria-label={`${t.progress.groupLabel}：${course.title}`} data-progress-for={course.id}>
+      {
+        PROGRESS_STATES.map((s) => (
+          <button type="button" class="btn-plain" data-state={s} aria-pressed="false">
+            {t.progress.states[s]}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <p class="verified text-30"><Icon name="verified-outline-rounded" /> {t.card.verifiedAt} {formatDate(course.verified_at)}</p>
+</article>
+
+<style>
+  .course {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1rem;
+    min-width: 0;
+    scroll-margin-top: 1rem;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+  }
+
+  .state-pill {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0 0.5rem;
+    border-radius: 0.4rem;
+    line-height: 1.6rem;
+  }
+
+  .state-pill:empty {
+    display: none;
+  }
+
+  .course[data-progress='want'] .state-pill {
+    color: var(--state-want);
+    background: color-mix(in oklch, var(--state-want) 14%, transparent);
+  }
+
+  .course[data-progress='doing'] .state-pill {
+    color: var(--state-doing);
+    background: color-mix(in oklch, var(--state-doing) 14%, transparent);
+  }
+
+  .course[data-progress='done'] .state-pill {
+    color: var(--state-done);
+    background: color-mix(in oklch, var(--state-done) 14%, transparent);
+  }
+
+  /* Title with Fuwari-style accent bar. */
+  .title {
+    position: relative;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-90);
+    overflow-wrap: anywhere;
+  }
+
+  .title::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 0.35em;
+    width: 4px;
+    height: 1.1em;
+    border-radius: 0 6px 6px 0;
+    background: var(--primary);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .meta-item .meta-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .summary {
+    font-size: 0.95rem;
+  }
+
+  .why {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.6rem;
+    background: var(--btn-regular-bg);
+  }
+
+  .why-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--btn-content);
+    margin-bottom: 0.1rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tags .chip {
+    height: 1.75rem;
+    font-size: 0.8rem;
+    cursor: default;
+  }
+
+  .tags .chip:active {
+    transform: none;
+  }
+
+  .prereq {
+    font-size: 0.82rem;
+  }
+
+  .foot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .link {
+    height: 2.5rem;
+    padding: 0 0.9rem;
+    border-radius: 0.6rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .link-official {
+    background: var(--primary);
+    color: var(--card-bg);
+  }
+
+  .link-official:hover {
+    background: color-mix(in oklch, var(--primary) 88%, black);
+  }
+
+  .progress {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+    background: var(--page-bg);
+  }
+
+  .progress button {
+    height: 2.25rem;
+    border-radius: 0.55rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .progress button[aria-pressed='true'] {
+    font-weight: 700;
+    color: var(--on-state);
+  }
+
+  .progress button[aria-pressed='true']::before {
+    transform: scale(1);
+  }
+
+  .progress button[aria-pressed='true'][data-state='want']::before {
+    background: var(--state-want);
+  }
+
+  .progress button[aria-pressed='true'][data-state='doing']::before {
+    background: var(--state-doing);
+  }
+
+  .progress button[aria-pressed='true'][data-state='done']::before {
+    background: var(--state-done);
+  }
+
+  .verified {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+</style>

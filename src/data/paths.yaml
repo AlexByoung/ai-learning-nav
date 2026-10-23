@@ -1,0 +1,20 @@
+# 学习路线。steps 按顺序排列，course 填 courses.yaml 里的 id。
+# 新增方法见 README.md「新增一条学习路线」。
+
+- id: agent-user-to-internals
+  title: 从用 Agent 到懂 Agent 底层
+  description: 先用现成框架把 agent 跑起来，再看业界怎么设计 agent，然后补上神经网络和语言模型原理，最后深入到让 agent 跑得快、跑得省的推理系统。
+  featured: true
+  steps:
+    - course: hf-agents-course
+      note: 先动手：用主流框架搭出第一个能调用工具的 agent，知道 agent 循环大概长什么样。
+    - course: berkeley-agentic-ai-f25
+      note: 开阔视野：听一线团队讲推理规划、评测、多智能体与安全，知道 agent 难在哪里。
+    - course: karpathy-zero-to-hero
+      note: 补原理：亲手写出反向传播和一个小 GPT，理解 agent 背后那个模型在做什么。
+    - course: stanford-cs336
+      note: 深入模型：从头实现并训练语言模型，搞清楚分词、架构、训练与对齐各环节。
+    - course: mit-6-5940
+      note: 深入效率：学习剪枝、量化和大模型部署等优化手段，理解成本与延迟从哪来。
+    - course: harvard-cs2680
+      note: 收尾串联：把 agent 设计和底层 serving 系统放在一起，看一个 agent 从上到下如何被优化。

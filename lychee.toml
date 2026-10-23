@@ -1,0 +1,10 @@
+# Shared lychee config for `npm run check-links` and .github/workflows/check-links.yml.
+max_retries = 3
+retry_wait_time = 5
+timeout = 30
+max_concurrency = 8
+no_progress = true
+# Some course sites reject unknown bots; identify as a normal browser.
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+# 429 = rate limited (the link itself is fine).
+accept = ["200..=299", "429"]

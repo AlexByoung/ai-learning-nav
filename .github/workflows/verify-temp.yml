@@ -1,16 +1,29 @@
+# Temporary: verify build + link check on the feature branch before merging. Remove before merge.
 name: verify-temp
 on:
   push:
     branches: [claude/ai-learning-nav-dev-kg0cp5]
-    paths: ['.verify/**', '.github/workflows/verify-temp.yml']
 permissions:
   contents: read
 jobs:
-  inspect:
+  verify:
     runs-on: ubuntu-latest
+    env:
+      ASTRO_TELEMETRY_DISABLED: 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-      - run: node .verify/inspect.mjs .verify/urls.txt
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: Install lychee
+        run: |
+          curl -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz" | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/lychee-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+      - run: npm run check-links -- --report link-report.md
+      - if: always()
+        run: cat link-report.md || true
+      - run: npm run check-links -- --node

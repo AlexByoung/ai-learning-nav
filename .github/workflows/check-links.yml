@@ -1,0 +1,72 @@
+name: Check links
+
+on:
+  schedule:
+    - cron: '17 2 * * 1' # every Monday 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: check-links
+  cancel-in-progress: false
+
+env:
+  LYCHEE_VERSION: 0.24.2
+  ISSUE_LABEL: broken-links
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install lychee
+        run: |
+          curl -sSfL "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/lychee-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+
+      - name: Check links in courses.yaml
+        id: links
+        run: |
+          set +e
+          npm run check-links -- --report link-report.md
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          if [ -f link-report.md ]; then cat link-report.md >> "$GITHUB_STEP_SUMMARY"; fi
+          exit 0
+
+      - name: Open or update issue for broken links
+        if: steps.links.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "定时链接检查发现 \`src/data/courses.yaml\` 里有失效链接。"
+            echo
+            echo "- 检查时间：$(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "- Workflow run：$RUN_URL"
+            echo
+            if [ -f link-report.md ]; then cat link-report.md; else echo "（没有生成报告，请查看 run 日志）"; fi
+            echo
+            echo "修好后请重新核实链接、更新对应课程的 \`verified_at\`，再关闭本 issue。"
+          } > issue-body.md
+          gh label create "$ISSUE_LABEL" --color d73a4a --description "Link checker found broken course links" --force
+          existing=$(gh issue list --state open --label "$ISSUE_LABEL" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file issue-body.md
+            echo "Updated issue #$existing"
+          else
+            gh issue create --title "链接检查：发现失效链接" --label "$ISSUE_LABEL" --body-file issue-body.md
+          fi
+
+      - name: Fail the run when links are broken
+        if: steps.links.outputs.exit_code != '0'
+        run: exit 1

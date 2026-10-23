@@ -1,0 +1,319 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { t } from '../i18n';
+import { CATEGORIES, CATEGORY_ICONS } from '../data/taxonomy';
+import { getCourses, getPaths } from '../lib/data';
+import { withBase } from '../lib/url';
+
+const courses = await getCourses();
+const paths = await getPaths();
+const featured = paths.find((p) => p.featured) ?? paths[0];
+const countBy = (cat: string) => courses.filter((c) => c.category === cat).length;
+---
+
+<Base home>
+  <div class="stack">
+    {
+      featured && (
+        <section class="card-base path" aria-labelledby="path-title">
+          <div class="path-head">
+            <p class="bar-title">{t.home.pathTitle}</p>
+            <span
+              class="path-progress"
+              data-path-progress
+              data-course-ids={featured.courses.map((s) => s.course.id).join(',')}
+              data-template={t.paths.pathProgress('{done}', '{total}')}
+            >
+              {t.paths.pathProgress(0, featured.courses.length)}
+            </span>
+          </div>
+          <h2 id="path-title" class="path-title">
+            <a href={withBase(`paths/${featured.id}/`)}>{featured.title}</a>
+          </h2>
+          <p class="text-75 path-desc">{featured.description}</p>
+          <ol class="timeline">
+            {featured.courses.map(({ course }, i) => (
+              <li>
+                <a class="tl-row" href={withBase(`paths/${featured.id}/#course-${course.id}`)}>
+                  <span class="tl-num text-50">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="tl-dot" aria-hidden="true" />
+                  <span class="tl-title">{course.title}</span>
+                  <span class={`level-badge level-${course.level}`}>{t.levels[course.level]}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+          <a class="btn-regular enter" href={withBase(`paths/${featured.id}/`)}>
+            {t.home.pathCta}
+            <Icon name="chevron-right-rounded" />
+          </a>
+        </section>
+      )
+    }
+
+    <section aria-labelledby="cat-title">
+      <div class="section-head">
+        <h2 id="cat-title" class="bar-title">{t.home.categoriesTitle}</h2>
+        <a class="all-link" href={withBase('courses/')}>{t.home.allCourses}<Icon name="chevron-right-rounded" /></a>
+      </div>
+      <ul class="cats">
+        {
+          CATEGORIES.map((key) => (
+            <li>
+              <a class="card-base cat" href={withBase(`courses/?category=${key}`)}>
+                <span class="cat-icon">
+                  <Icon name={CATEGORY_ICONS[key]} />
+                </span>
+                <span class="cat-body">
+                  <span class="cat-name">{t.categories[key].name}</span>
+                  <span class="cat-desc text-50">{t.categories[key].description}</span>
+                </span>
+                <span class="cat-count">{t.home.courseCount(countBy(key))}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .path {
+    position: relative;
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+
+  .path-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .path-head .bar-title {
+    font-size: 0.95rem;
+    color: var(--primary);
+  }
+
+  .path-progress {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--btn-content);
+    background: var(--btn-regular-bg);
+    padding: 0.1rem 0.6rem;
+    border-radius: 0.4rem;
+  }
+
+  .path-title {
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    font-weight: 700;
+  }
+
+  .path-title a {
+    color: var(--text-90);
+    transition: color 0.15s ease;
+  }
+
+  .path-title a:hover {
+    color: var(--primary);
+  }
+
+  .path-desc {
+    margin: 0.5rem 0 1rem;
+    max-width: 46rem;
+  }
+
+  /* Timeline adapted from Fuwari's archive panel: dashed rail with dots that grow on hover. */
+  .timeline {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+  }
+
+  .tl-row {
+    display: grid;
+    grid-template-columns: 2rem 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 2.75rem;
+    border-radius: 0.6rem;
+    color: var(--text-75);
+    transition: background-color 0.15s ease;
+  }
+
+  .tl-row:hover {
+    background: var(--btn-plain-bg-hover);
+  }
+
+  .tl-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .tl-dot {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tl-dot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1px);
+    border-left: 2px dashed var(--line-color);
+  }
+
+  .tl-dot::after {
+    content: '';
+    position: relative;
+    width: 6px;
+    height: 6px;
+    border-radius: 6px;
+    background: oklch(0.6 0.06 var(--hue));
+    outline: 4px solid var(--card-bg);
+    transition: height 0.15s ease, background-color 0.15s ease, outline-color 0.15s ease;
+  }
+
+  .tl-row:hover .tl-dot::after {
+    height: 1.25rem;
+    background: var(--primary);
+    outline-color: var(--btn-plain-bg-hover);
+  }
+
+  .tl-title {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 0.75rem;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .tl-row:hover .tl-title {
+    color: var(--primary);
+    transform: translateX(4px);
+  }
+
+  .tl-row .level-badge {
+    margin-right: 0.5rem;
+  }
+
+  .enter {
+    height: 2.5rem;
+    padding: 0 0.6rem 0 1rem;
+    border-radius: 0.6rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .enter :global(svg) {
+    font-size: 1.4rem;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0.25rem 0.75rem;
+  }
+
+  .all-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .cats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .cats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .cat {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    height: 100%;
+    padding: 1rem;
+    color: var(--text-90);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .cat:hover {
+    background: var(--btn-card-bg-hover);
+  }
+
+  .cat:active {
+    transform: scale(0.98);
+  }
+
+  .cat-icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.8rem;
+    background: var(--btn-regular-bg);
+    color: var(--btn-content);
+    font-size: 1.6rem;
+  }
+
+  .cat-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cat-name {
+    font-weight: 700;
+  }
+
+  .cat-desc {
+    font-size: 0.85rem;
+  }
+
+  .cat-count {
+    flex: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--btn-content);
+    background: var(--btn-regular-bg);
+    padding: 0.15rem 0.55rem;
+    border-radius: 0.4rem;
+  }
+
+  @media (max-width: 480px) {
+    .path {
+      padding: 1.25rem 1rem 1rem;
+    }
+    .tl-row {
+      grid-template-columns: 1.5rem 1.75rem minmax(0, 1fr) auto;
+    }
+  }
+</style>

@@ -1,0 +1,190 @@
+# 课程数据。字段说明与新增方法见 README.md「新增一门课」。
+# category: foundations | llm | agents | infra | apps
+# level:    beginner(入门) | intermediate(中级) | advanced(进阶)
+# formats:  video | slides | assignments | notes
+# 每个链接都必须亲自打开核实过，再更新 verified_at。
+
+- id: harvard-cs2680
+  title: "CS2680 Modern AI Systems: Agents and System Optimizations"
+  provider: "Harvard · Juncheng Yang"
+  category: agents
+  level: advanced
+  prerequisites:
+    - 熟练使用 Python
+    - 计算机系统基础（操作系统 / 体系结构）
+    - 用过 LLM API 或 coding agent
+  formats: [slides, assignments, notes]
+  free: true
+  term: "Fall 2026"
+  links:
+    official: "https://cs2680.com"
+  summary_zh: "前半段讲 LLM 与 agent 怎么设计、怎么用，后半段转到支撑 agent 的推理服务系统：批处理、调度、路由、缓存、量化等优化，作业是一步步搭起同一套 agent 系统。"
+  why: "很少有课把 agent 应用层和底层 serving 系统串成一条线讲，适合想弄明白 agent 为什么慢、为什么贵、该从哪儿优化的人。"
+  verified_at: 2026-10-23
+
+- id: karpathy-zero-to-hero
+  title: "Neural Networks: Zero to Hero"
+  provider: "Andrej Karpathy"
+  category: foundations
+  level: intermediate
+  prerequisites:
+    - 扎实的 Python 编程
+    - 高中到大一程度的数学（导数、概率分布）
+  formats: [video, notes]
+  free: true
+  term: null
+  links:
+    official: "https://karpathy.ai/zero-to-hero.html"
+    youtube: "https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ"
+    other: "https://github.com/karpathy/nn-zero-to-hero"
+  summary_zh: "跟着视频一行行写代码：先手搓自动求导和反向传播，再一路搭到字符级语言模型和一个小型 GPT。"
+  why: "把“模型是怎么学会的”讲到你能自己写出来的程度，是从零理解 LLM 最扎实的入口之一。"
+  verified_at: 2026-10-23
+
+- id: stanford-cs336
+  title: "CS336: Language Modeling from Scratch"
+  provider: "Stanford · Percy Liang & Tatsunori Hashimoto"
+  category: llm
+  level: advanced
+  prerequisites:
+    - 熟练 Python 与 PyTorch
+    - 深度学习基础
+    - 线性代数、概率与基础系统知识
+  formats: [video, assignments]
+  free: true
+  term: "Spring 2026"
+  links:
+    official: "https://cs336.stanford.edu/"
+    youtube: "https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"
+  summary_zh: "亲手把一个语言模型从头造出来：分词器、Transformer、训练、扩展规律、数据清洗到对齐，每一环都要自己实现。"
+  why: "作业几乎不给脚手架、工作量很大，啃下来以后对大模型训练全链路会有真实的手感。"
+  verified_at: 2026-10-23
+
+- id: stanford-cs224n
+  title: "CS224N: Natural Language Processing with Deep Learning"
+  provider: "Stanford · Christopher Manning"
+  category: llm
+  level: intermediate
+  prerequisites:
+    - Python（NumPy / PyTorch）
+    - 微积分、线性代数、概率统计
+    - 机器学习基础概念
+  formats: [video, slides, assignments, notes]
+  free: true
+  term: "Winter 2026"
+  links:
+    official: "https://web.stanford.edu/class/cs224n/"
+    youtube: "https://www.youtube.com/playlist?list=PLoROMvodv4rOaMFbaqxPDoLWjDaRAdP9D"
+  summary_zh: "用深度学习做 NLP 的系统课：从词向量、神经网络语言模型讲到注意力、Transformer 和预训练。课程网站是最新学期，公开录像是 2024 春季版。"
+  why: "体系完整、多年口碑稳定，适合在深入 LLM 之前把 NLP 的核心概念和来龙去脉补齐。"
+  verified_at: 2026-10-23
+
+- id: berkeley-agentic-ai-f25
+  title: "Agentic AI MOOC（CS294/194-196）"
+  provider: "UC Berkeley RDI · Dawn Song"
+  category: agents
+  level: intermediate
+  prerequisites:
+    - 了解 LLM 的基本用法
+    - 读得懂机器学习论文的大意
+  formats: [video, slides]
+  free: true
+  term: "Fall 2025"
+  links:
+    official: "https://agenticai-learning.org/f25"
+    youtube: "https://www.youtube.com/playlist?list=PLS01nW3RtgoqGkm4UeqNeZLccW-OGc1fJ"
+    other: "https://rdi.berkeley.edu/agentic-ai/f25"
+  summary_zh: "讲座式课程，每周请工业界或学界的一线团队来讲 agent：从基础模型、推理与规划、框架与基础设施，到评测、多智能体和安全。"
+  why: "一门课里就能看到很多团队真实在怎么做 agent，适合快速建立全景、再挑方向深挖。"
+  verified_at: 2026-10-23
+
+- id: cmu-dlsys
+  title: "10-414/714 Deep Learning Systems: Algorithms and Implementation"
+  provider: "Carnegie Mellon University"
+  category: infra
+  level: advanced
+  prerequisites:
+    - 熟练 Python，能读写 C++
+    - 线性代数与机器学习基础
+    - 了解 GPU / 并行计算更佳
+  formats: [video, slides, assignments]
+  free: true
+  term: "Fall 2026"
+  links:
+    official: "https://dlsyscourse.org/"
+    youtube: "https://www.youtube.com/@deeplearningsystemscourse1116"
+    other: "https://dlsyscourse.org/lectures/"
+  summary_zh: "从零写一个叫 Needle 的小型深度学习框架：自动微分、张量运算、GPU 加速，一直到常见模型结构都要自己实现。"
+  why: "想做 AI Infra，亲手写一遍框架是理解 PyTorch 底下发生了什么的最直接方式。"
+  verified_at: 2026-10-23
+
+- id: mit-6-5940
+  title: "MIT 6.5940 TinyML and Efficient AI Computing"
+  provider: "MIT HAN Lab · Song Han"
+  category: infra
+  level: advanced
+  prerequisites:
+    - 机器学习 / 深度学习基础
+    - 计算机体系结构基础
+    - 熟练 Python 与 PyTorch
+  formats: [video, slides, assignments]
+  free: true
+  term: "Fall 2026"
+  links:
+    official: "https://hanlab.mit.edu/courses/2026-fall-65940"
+    youtube: "https://www.youtube.com/@MITHANLab"
+    other: "https://hanlab.mit.edu/courses/2024-fall-65940"
+  summary_zh: "讲怎样让模型又小又快：剪枝、量化、神经架构搜索，再到分布式训练、模型服务以及大模型的量化与部署，配有动手实验。"
+  why: "量化、稀疏、推理加速这些工作中天天碰到的话题，这门课讲得系统且贴近工程实践。"
+  verified_at: 2026-10-23
+
+- id: fastai-practical-dl
+  title: "Practical Deep Learning for Coders"
+  provider: "fast.ai · Jeremy Howard"
+  category: foundations
+  level: beginner
+  prerequisites:
+    - 会写一点 Python
+  formats: [video, notes]
+  free: true
+  term: null
+  links:
+    official: "https://course.fast.ai/"
+    youtube: "https://www.youtube.com/playlist?list=PLfYUBJiXbdtSvpQjSnJJ_PmDQB_VyT5iU"
+  summary_zh: "先动手后讲原理：第一课就训练出能用的模型，再逐步拆开看背后的机制，覆盖视觉、文本、表格数据和推荐等场景。"
+  why: "对有编程基础、但被数学劝退的人特别友好，能最快建立“深度学习能做什么”的直觉。"
+  verified_at: 2026-10-23
+
+- id: hf-agents-course
+  title: "Hugging Face AI Agents Course"
+  provider: "Hugging Face"
+  category: apps
+  level: beginner
+  prerequisites:
+    - 基础 Python
+    - 对 LLM 有基本了解
+  formats: [notes, assignments]
+  free: true
+  term: null
+  links:
+    official: "https://huggingface.co/learn/agents-course/unit0/introduction"
+  summary_zh: "从 agent 的基本概念讲起，然后分别用 smolagents、LlamaIndex、LangGraph 动手搭 agent，最后做一个能被评测的结课项目。"
+  why: "门槛低、全程可动手，很适合作为“先把 agent 用起来”的第一站。"
+  verified_at: 2026-10-23
+
+- id: 3b1b-neural-networks
+  title: "Neural Networks（神经网络系列）"
+  provider: "3Blue1Brown"
+  category: foundations
+  level: beginner
+  prerequisites:
+    - 无硬性要求，有高中数学即可
+  formats: [video]
+  free: true
+  term: null
+  links:
+    official: "https://www.3blue1brown.com/lessons/neural-networks"
+    youtube: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+  summary_zh: "用动画把神经网络画给你看：网络结构长什么样、它在“认”什么、梯度下降又是怎么让它学会的。"
+  why: "几乎零门槛，先把直觉建立起来，之后再看公式和代码会轻松很多。"
+  verified_at: 2026-10-23

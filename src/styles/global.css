@@ -1,0 +1,388 @@
+/*
+ * Visual language adapted from Fuwari by saicaca (MIT License, https://github.com/saicaca/fuwari):
+ * hue-driven oklch palette, card / button styles, navbar + banner layout, onload animation.
+ * Re-implemented here in plain CSS; see THIRD_PARTY_NOTICES.md for the license text.
+ */
+
+:root {
+  --hue: 165;
+  --radius-large: 1rem;
+  --page-width: 75rem;
+  --banner-height: 30vh;
+  --overlap: 3.5rem;
+  --font: Roboto, system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC',
+    'Microsoft YaHei', sans-serif;
+
+  color-scheme: light;
+  --primary: oklch(0.7 0.14 var(--hue));
+  --page-bg: oklch(0.95 0.01 var(--hue));
+  --card-bg: #fff;
+  --float-panel-bg: #fff;
+  --btn-content: oklch(0.55 0.12 var(--hue));
+  --btn-regular-bg: oklch(0.95 0.025 var(--hue));
+  --btn-regular-bg-hover: oklch(0.9 0.05 var(--hue));
+  --btn-regular-bg-active: oklch(0.85 0.08 var(--hue));
+  --btn-plain-bg-hover: oklch(0.95 0.025 var(--hue));
+  --btn-plain-bg-active: oklch(0.98 0.01 var(--hue));
+  --btn-card-bg-hover: oklch(0.98 0.005 var(--hue));
+  --deep-text: oklch(0.25 0.02 var(--hue));
+  --title-active: oklch(0.6 0.1 var(--hue));
+  --line-divider: rgb(0 0 0 / 0.08);
+  --line-color: rgb(0 0 0 / 0.1);
+  --meta-divider: rgb(0 0 0 / 0.2);
+  --selection-bg: oklch(0.9 0.05 var(--hue));
+  --text-90: rgb(0 0 0 / 0.9);
+  --text-75: rgb(0 0 0 / 0.75);
+  --text-50: rgb(0 0 0 / 0.5);
+  --text-30: rgb(0 0 0 / 0.3);
+  --banner-a: oklch(0.78 0.1 var(--hue));
+  --banner-b: oklch(0.72 0.12 calc(var(--hue) + 40));
+  --banner-c: oklch(0.86 0.06 calc(var(--hue) - 30));
+  --level-beginner: oklch(0.6 0.13 150);
+  --level-intermediate: oklch(0.65 0.13 70);
+  --level-advanced: oklch(0.6 0.17 25);
+  --state-want: oklch(0.62 0.14 290);
+  --state-doing: oklch(0.68 0.14 65);
+  --state-done: oklch(0.62 0.13 150);
+  --on-state: #fff;
+  --rainbow: linear-gradient(to right, oklch(0.8 0.1 0), oklch(0.8 0.1 60), oklch(0.8 0.1 120), oklch(0.8 0.1 180),
+      oklch(0.8 0.1 240), oklch(0.8 0.1 300), oklch(0.8 0.1 360));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --primary: oklch(0.75 0.14 var(--hue));
+    --page-bg: oklch(0.16 0.014 var(--hue));
+    --card-bg: oklch(0.23 0.015 var(--hue));
+    --float-panel-bg: oklch(0.19 0.015 var(--hue));
+    --btn-content: oklch(0.75 0.1 var(--hue));
+    --btn-regular-bg: oklch(0.33 0.035 var(--hue));
+    --btn-regular-bg-hover: oklch(0.38 0.04 var(--hue));
+    --btn-regular-bg-active: oklch(0.43 0.045 var(--hue));
+    --btn-plain-bg-hover: oklch(0.3 0.035 var(--hue));
+    --btn-plain-bg-active: oklch(0.27 0.025 var(--hue));
+    --btn-card-bg-hover: oklch(0.3 0.03 var(--hue));
+    --title-active: oklch(0.6 0.1 var(--hue));
+    --line-divider: rgb(255 255 255 / 0.08);
+    --line-color: rgb(255 255 255 / 0.1);
+    --meta-divider: rgb(255 255 255 / 0.2);
+    --selection-bg: oklch(0.4 0.08 var(--hue));
+    --text-90: rgb(255 255 255 / 0.9);
+    --text-75: rgb(255 255 255 / 0.75);
+    --text-50: rgb(255 255 255 / 0.5);
+    --text-30: rgb(255 255 255 / 0.3);
+    --banner-a: oklch(0.35 0.07 var(--hue));
+    --banner-b: oklch(0.3 0.08 calc(var(--hue) + 40));
+    --banner-c: oklch(0.4 0.05 calc(var(--hue) - 30));
+    --level-beginner: oklch(0.75 0.13 150);
+    --level-intermediate: oklch(0.8 0.12 75);
+    --level-advanced: oklch(0.74 0.14 25);
+    --state-want: oklch(0.72 0.13 290);
+    --state-doing: oklch(0.78 0.13 70);
+    --state-done: oklch(0.74 0.13 150);
+    --on-state: oklch(0.16 0.014 var(--hue));
+    --rainbow: linear-gradient(to right, oklch(0.7 0.1 0), oklch(0.7 0.1 60), oklch(0.7 0.1 120), oklch(0.7 0.1 180),
+        oklch(0.7 0.1 240), oklch(0.7 0.1 300), oklch(0.7 0.1 360));
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --primary: oklch(0.75 0.14 var(--hue));
+  --page-bg: oklch(0.16 0.014 var(--hue));
+  --card-bg: oklch(0.23 0.015 var(--hue));
+  --float-panel-bg: oklch(0.19 0.015 var(--hue));
+  --btn-content: oklch(0.75 0.1 var(--hue));
+  --btn-regular-bg: oklch(0.33 0.035 var(--hue));
+  --btn-regular-bg-hover: oklch(0.38 0.04 var(--hue));
+  --btn-regular-bg-active: oklch(0.43 0.045 var(--hue));
+  --btn-plain-bg-hover: oklch(0.3 0.035 var(--hue));
+  --btn-plain-bg-active: oklch(0.27 0.025 var(--hue));
+  --btn-card-bg-hover: oklch(0.3 0.03 var(--hue));
+  --title-active: oklch(0.6 0.1 var(--hue));
+  --line-divider: rgb(255 255 255 / 0.08);
+  --line-color: rgb(255 255 255 / 0.1);
+  --meta-divider: rgb(255 255 255 / 0.2);
+  --selection-bg: oklch(0.4 0.08 var(--hue));
+  --text-90: rgb(255 255 255 / 0.9);
+  --text-75: rgb(255 255 255 / 0.75);
+  --text-50: rgb(255 255 255 / 0.5);
+  --text-30: rgb(255 255 255 / 0.3);
+  --banner-a: oklch(0.35 0.07 var(--hue));
+  --banner-b: oklch(0.3 0.08 calc(var(--hue) + 40));
+  --banner-c: oklch(0.4 0.05 calc(var(--hue) - 30));
+  --level-beginner: oklch(0.75 0.13 150);
+  --level-intermediate: oklch(0.8 0.12 75);
+  --level-advanced: oklch(0.74 0.14 25);
+  --state-want: oklch(0.72 0.13 290);
+  --state-doing: oklch(0.78 0.13 70);
+  --state-done: oklch(0.74 0.13 150);
+  --on-state: oklch(0.16 0.014 var(--hue));
+  --rainbow: linear-gradient(to right, oklch(0.7 0.1 0), oklch(0.7 0.1 60), oklch(0.7 0.1 120), oklch(0.7 0.1 180),
+      oklch(0.7 0.1 240), oklch(0.7 0.1 300), oklch(0.7 0.1 360));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--page-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--text-90);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  transition: background-color 0.15s ease;
+}
+
+::selection {
+  background-color: var(--selection-bg);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.35;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+.text-90 {
+  color: var(--text-90);
+}
+
+.text-75 {
+  color: var(--text-75);
+}
+
+.text-50 {
+  color: var(--text-50);
+}
+
+.text-30 {
+  color: var(--text-30);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Cards & buttons ---------- */
+
+.card-base {
+  background: var(--card-bg);
+  border-radius: var(--radius-large);
+  transition: background-color 0.15s ease;
+}
+
+/* Section title with the short primary-colored bar on the left. */
+.bar-title {
+  position: relative;
+  padding-left: 14px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text-90);
+}
+
+.bar-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  width: 4px;
+  height: 1em;
+  border-radius: 6px;
+  background: var(--primary);
+}
+
+.btn-regular {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: var(--btn-regular-bg);
+  color: var(--btn-content);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-regular:hover {
+  background: var(--btn-regular-bg-hover);
+}
+
+.btn-regular:active {
+  background: var(--btn-regular-bg-active);
+  transform: scale(0.96);
+}
+
+.btn-plain {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: var(--text-75);
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+/* "Expand" hover: a background that grows from 85% to full size. */
+.btn-plain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transform: scale(0.85);
+  transition: transform 0.15s ease-out, background-color 0.15s ease-out;
+}
+
+.btn-plain:hover {
+  color: var(--primary);
+}
+
+.btn-plain:hover::before,
+.btn-plain[aria-current='page']::before {
+  transform: scale(1);
+  background: var(--btn-plain-bg-hover);
+}
+
+.btn-plain:active {
+  transform: scale(0.95);
+}
+
+.btn-plain[aria-current='page'] {
+  color: var(--primary);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 2rem;
+  padding: 0 12px;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.chip-dot::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 4px;
+  background: currentColor;
+}
+
+.meta-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--btn-regular-bg);
+  color: var(--btn-content);
+  font-size: 1.15rem;
+}
+
+.level-beginner {
+  --level: var(--level-beginner);
+}
+
+.level-intermediate {
+  --level: var(--level-intermediate);
+}
+
+.level-advanced {
+  --level: var(--level-advanced);
+}
+
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 1.6rem;
+  padding: 0 8px;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--level);
+  background: color-mix(in oklch, var(--level) 14%, transparent);
+}
+
+.divider-dashed {
+  border: 0;
+  border-top: 1px dashed var(--line-color);
+  margin: 0;
+}
+
+/* ---------- Onload animation ---------- */
+
+@keyframes fade-in-up {
+  from {
+    transform: translateY(2rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.onload-animation {
+  opacity: 0;
+  animation: 300ms fade-in-up forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onload-animation {
+    opacity: 1;
+    animation: none;
+  }
+  *,
+  *::before {
+    transition: none !important;
+  }
+}
