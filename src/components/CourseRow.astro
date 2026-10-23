@@ -1,0 +1,258 @@
+---
+import LayerMark from './LayerMark.astro';
+import { t } from '../i18n';
+import { PROGRESS_STATES } from '../data/taxonomy';
+import { formatDate, hasVideo, type Course } from '../lib/data';
+
+interface Props {
+  course: Course;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { course, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+const layer = t.layers[course.category];
+const searchText = [
+  course.title,
+  course.provider,
+  course.summary_zh,
+  course.why,
+  course.term ?? '',
+  layer.name,
+  t.levels[course.level],
+  ...course.prerequisites,
+  ...course.formats.map((f) => t.formats[f]),
+]
+  .join(' ')
+  .toLowerCase();
+const links = [
+  { href: course.links.official, label: t.card.official, kind: 'official' },
+  course.links.youtube && { href: course.links.youtube, label: t.card.youtube, kind: 'youtube' },
+  course.links.other && { href: course.links.other, label: t.card.other, kind: 'other' },
+].filter(Boolean) as { href: string; label: string; kind: string }[];
+const facts = [...course.formats.map((f) => t.formats[f]), course.free ? t.card.free : null].filter(Boolean).join('，');
+---
+
+<article
+  class="row"
+  id={`course-${course.id}`}
+  data-course-id={course.id}
+  data-category={course.category}
+  data-level={course.level}
+  data-video={String(hasVideo(course))}
+  data-free={String(course.free)}
+  data-search={searchText}
+>
+  <div class="who">
+    <p class="layer">
+      <LayerMark layer={course.category} />
+      <span>{layer.short}</span>
+      <span class={`level level-${course.level}`}>{t.levels[course.level]}</span>
+      <span class="state" data-state-pill></span>
+    </p>
+    <Heading class="title">{course.title}</Heading>
+    <p class="provider">{course.provider}{course.term && `，${course.term}`}</p>
+  </div>
+
+  <div class="what">
+    <p class="summary">{course.summary_zh}</p>
+    <p class="why"><strong>{t.card.why}：</strong>{course.why}</p>
+    <p class="facts small">
+      {facts}。{t.card.prerequisites}：{course.prerequisites.join('；')}。
+    </p>
+  </div>
+
+  <div class="act">
+    <div class="links">
+      {
+        links.map((l) => (
+          <a class={`go go-${l.kind}`} href={l.href} target="_blank" rel="noopener noreferrer">
+            {l.label}
+            <span class="sr-only">{t.card.opensInNewTab}</span>
+          </a>
+        ))
+      }
+    </div>
+    <div class="progress" role="group" aria-label={`${t.progress.groupLabel}：${course.title}`} data-progress-for={course.id}>
+      {
+        PROGRESS_STATES.map((s) => (
+          <button type="button" data-state={s} aria-pressed="false">
+            {t.progress.states[s]}
+          </button>
+        ))
+      }
+    </div>
+    <p class="verified small">{t.card.verifiedAt} {formatDate(course.verified_at)}</p>
+  </div>
+</article>
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.5rem var(--margin);
+    background: var(--surface);
+    color: var(--ink);
+    scroll-margin-top: 5rem;
+  }
+
+  @media (min-width: 64em) {
+    .row {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+      gap: var(--gutter);
+      padding: 1.75rem 1.75rem 1.5rem;
+    }
+  }
+
+  .layer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-size: var(--step-small);
+  }
+
+  .layer :global(.layer-mark) {
+    width: 1.25rem;
+    color: var(--ink);
+  }
+
+  .level {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .state:empty {
+    display: none;
+  }
+
+  .state {
+    margin-left: auto;
+    padding: 0.1rem 0.5rem;
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .row[data-progress='doing'] .state {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .title {
+    font-size: var(--step-lead);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .provider {
+    margin-top: 0.4rem;
+    color: var(--muted);
+  }
+
+  .summary {
+    max-width: 52ch;
+  }
+
+  .why {
+    margin-top: 0.75rem;
+    max-width: 52ch;
+    color: var(--muted);
+  }
+
+  .why strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .facts {
+    margin-top: 0.75rem;
+    color: var(--muted);
+  }
+
+  .act {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .go {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background-color var(--t-hover) ease,
+      transform var(--t-press) var(--ease-out);
+  }
+
+  .go-official {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .go:active {
+    transform: scale(0.97);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .go:hover {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+  }
+
+  .progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .progress button {
+    min-height: 2.75rem;
+    background: var(--bg);
+    color: var(--muted);
+    transition:
+      background-color var(--t-hover) ease,
+      color var(--t-hover) ease,
+      transform var(--t-press) var(--ease-out);
+  }
+
+  .progress button:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .progress button:hover {
+      color: var(--ink);
+    }
+  }
+
+  .progress button[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .progress button[aria-pressed='true'][data-state='doing'] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .verified {
+    color: var(--muted);
+  }
+</style>

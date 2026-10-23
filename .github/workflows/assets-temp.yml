@@ -3,24 +3,43 @@ name: assets-temp
 on:
   push:
     branches: [claude/ai-learning-nav-dev-kg0cp5]
-    paths: ['.taste-tools/**', '.github/workflows/assets-temp.yml']
+    paths: ['.taste-tools/queries.txt', '.taste-tools/collect.mjs', '.taste-tools/get.txt', '.github/workflows/assets-temp.yml']
 permissions:
-  contents: read
+  contents: write
 jobs:
-  search:
+  collect:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Search
+      - name: Search and preview
+        run: node .taste-tools/collect.mjs
+      - name: Download chosen pictures
+        if: hashFiles('.taste-tools/get.txt') != ''
         run: |
-          while IFS= read -r q; do
-            [ -z "$q" ] && continue
-            echo "=================== $q"
-            node .taste-tools/scripts/assets.mjs "$q" --limit 5 --orientation landscape --no-check --json \
-              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);for(const r of (j.results||j)) console.log(JSON.stringify({ref:r.ref,title:r.title,creator:r.creator,license:r.license,w:r.width,h:r.height,src:r.source||r.provider,page:r.page}))}catch(e){console.log(s.slice(0,3000))}})'
-          done < .taste-tools/queries.txt
-      - name: Fontshare CSS
-        run: curl -sS "https://api.fontshare.com/v2/css?f[]=general-sans@400,500,700&display=swap" | head -40
+          refs=$(grep -v '^#' .taste-tools/get.txt | awk -F'|' 'NF{gsub(/ /,"",$1);gsub(/ /,"",$2); print $1"|"$2}')
+          for r in $refs; do
+            ref="${r%%|*}"; name="${r##*|}"
+            node .taste-tools/scripts/assets.mjs --get "$ref" --to public/archive --name "$name" --width 1920 || echo "FAILED $ref"
+          done
+          node .taste-tools/scripts/assets.mjs --credits --to public/archive || true
+      - name: Self-host General Sans
+        run: |
+          mkdir -p src/assets/fonts
+          css=$(curl -sS "https://api.fontshare.com/v2/css?f[]=general-sans@400,500,700&display=swap")
+          i=0
+          for w in Regular Medium Bold; do
+            url=$(echo "$css" | grep -o "//cdn.fontshare.com[^']*\.woff2" | sed -n "$((i+1))p")
+            curl -sSfL "https:$url" -o "src/assets/fonts/GeneralSans-$w.woff2"
+            i=$((i+1))
+          done
+          ls -la src/assets/fonts
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .taste-tools/candidates src/assets/fonts public/archive 2>/dev/null || true
+          git commit -m "Temporary: picture candidates and fonts from runner" || echo "nothing to commit"
+          git push

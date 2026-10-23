@@ -1,0 +1,40 @@
+---
+// The motif at text size: five stacked bars, the course's own layer lit in the accent.
+import { CATEGORIES, type Category } from '../data/taxonomy';
+import { t } from '../i18n';
+
+interface Props {
+  layer: Category;
+  class?: string;
+}
+
+const { layer, class: className } = Astro.props;
+const index = CATEGORIES.indexOf(layer);
+---
+
+<svg
+  class:list={['layer-mark', className]}
+  viewBox="0 0 24 29"
+  role="img"
+  aria-label={t.card.layerOf(t.layers[layer].name)}
+>
+  {CATEGORIES.map((_, i) => <rect x="0" y={i * 6} width="24" height="5" class:list={[{ lit: i === index }]} />)}
+</svg>
+
+<style>
+  .layer-mark {
+    flex: none;
+    width: 1.5rem;
+    height: auto;
+  }
+
+  rect {
+    fill: currentColor;
+    opacity: 0.28;
+  }
+
+  rect.lit {
+    fill: var(--accent);
+    opacity: 1;
+  }
+</style>
