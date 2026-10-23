@@ -14,6 +14,20 @@ for (const line of lines) {
       console.log(JSON.stringify({ oembed: target, status: r.status, title: j.title, author: j.author_name, author_url: j.author_url, raw: j.title ? undefined : body.slice(0, 200) }));
       continue;
     }
+    if (line.startsWith('links ')) {
+      const [url, re] = line.slice(6).split(' | ');
+      const html = await (await fetch(url, { headers: { 'user-agent': UA } })).text();
+      const out = [...html.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)].map((m) => [m[1], m[2].replace(/<[^>]+>/g, '').trim()]).filter(([h, t]) => new RegExp(re, 'i').test(h + ' ' + t));
+      const checked = [];
+      for (const [h, t] of out.slice(0, 12)) {
+        const abs = new URL(h, url).href;
+        let st = 'skip';
+        try { const r = await fetch(abs, { headers: { 'user-agent': UA }, redirect: 'follow' }); st = r.status + ' ' + r.url + ' ' + (r.headers.get('content-type') || ''); } catch (e) { st = 'err ' + e.message; }
+        checked.push({ text: t.slice(0, 60), href: abs, st });
+      }
+      console.log(JSON.stringify({ links: url, total: out.length, checked }));
+      continue;
+    }
     const [url, kws = ''] = line.split(' | ');
     const r = await fetch(url, { headers: { 'user-agent': UA, 'accept-language': 'en' }, redirect: 'follow' });
     const html = await r.text();
