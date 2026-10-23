@@ -60,7 +60,6 @@ export const zhCN = {
     titleLines: ['AI 公开课，', '从用到懂底层'],
     lead: '10 门免费课，按应用、Agent、LLM、基础、Infra 五层排好；每门标了难度和我写的简介，点开直接去官网或 YouTube。',
     links: ['全部课程', '学习路线', '我的进度'],
-    pictureCaption: '五层，从上到下：',
     statement: {
       a: '先从',
       b: '会用 agent 开始，往下补',
@@ -105,7 +104,6 @@ export const zhCN = {
     summary: '按先后顺序排好的课程组合，从上往下学。',
     steps: (n: number) => `${n} 门课`,
     pathProgress: (done: number | string, total: number | string) => `已学完 ${done} / ${total}`,
-    stepLabel: (i: number, layer: string) => `第 ${i} 门 · ${layer}`,
     back: '全部路线',
     enter: '进入路线',
   },

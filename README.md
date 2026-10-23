@@ -5,7 +5,7 @@ AI 学习导航站：课程分类、难度标注、个人简介、学习路线�
 - 线上地址：https://alexbyoung.github.io/ai-learning-nav/
 - 技术栈：Astro（纯静态输出）+ content collections + zod 校验，部署在 GitHub Pages
 - 无后端、无数据库、无账号、无 analytics / cookie；学习进度只存在浏览器 localStorage
-- 界面风格参考 [Fuwari](https://github.com/saicaca/fuwari)（MIT），用纯 CSS 重写，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+- 界面按 [tasteskill v2](https://github.com/Leonxlnx/taste-skill)（MIT）的流程设计，第三方授权见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 ## 本地运行
 
@@ -42,7 +42,7 @@ npm run check-links -- --node            # 强制使用内置检查器
 - id: some-course-id            # 唯一，小写字母/数字/连字符
   title: "课程原名"
   provider: "学校或作者 · 讲师"
-  category: agents              # foundations | llm | agents | infra | apps
+  category: agents              # apps | agents | llm | foundations | infra（从上层到底层）
   level: intermediate           # beginner(入门) | intermediate(中级) | advanced(进阶)
   prerequisites:                # 建议前置，可为空列表 []
     - 熟练 Python
@@ -90,6 +90,14 @@ npm run check-links -- --node            # 强制使用内置检查器
 
 引用了不存在的课程 id 时 build 会失败。
 
+## 设计说明
+
+- 方向：tasteskill v2 发的 “One motif” 方向（seed 526277564，记录在 `.taste-skill/direction.json`），石墨灰 + 安全橙，字体 General Sans（自托管在 `src/assets/fonts/`，中文回退系统字体），全站直角。
+- 母题是“层”：学习路线从最上层的应用一路往下到底层系统，所以五层叠起来的横条贯穿全站——首页大图被切成五层、每门课旁边的小标记点亮它所在的那一层、页脚的字块也是一层层的高低。
+- 图片是这五层各自的历史物件（IBM 704 机房、Shakey 机器人、Hollerith 穿孔卡、Mark I 感知机、ENIAC），来自 Wikimedia Commons 的公有领域 / CC 授权图片，存放在 `public/archive/`，来源与授权见 `public/archive/CREDITS.md` 和页脚。它们不代表任何课程本身。
+- 新增一层的图片时，在 `src/data/pictures.ts` 里登记文件、尺寸、alt、来源页面和署名。
+- 站点默认就是深色界面（`color-scheme: dark`），没有单独的浅色主题。
+
 ## 部署
 
 push 到 `main` 时 `.github/workflows/deploy.yml` 自动 build 并用 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布到 GitHub Pages（repo 的 Pages Source 需设为 GitHub Actions）。Pull request 只跑 build，不部署。
@@ -99,12 +107,12 @@ push 到 `main` 时 `.github/workflows/deploy.yml` 自动 build 并用 `actions/
 ```
 src/
   content.config.ts   # zod schema（courses / paths）
-  data/               # courses.yaml、paths.yaml、taxonomy.ts
+  data/               # courses.yaml、paths.yaml、taxonomy.ts、pictures.ts
   i18n/               # 所有界面文案（zh-CN.ts）
-  components/         # CourseCard、Sidebar、Banner、Icon
-  layouts/Base.astro  # 导航栏、横幅、侧边栏、页脚
+  components/         # CourseRow（课程行）、LayerMark（层标记）
+  layouts/Base.astro  # 顶栏、页脚（字块标志、图片署名）
   pages/              # 首页、/courses/、/paths/、/paths/[id]/、404
-  scripts/            # 进度（localStorage）、主题色 / 深色模式
+  scripts/            # 进度（localStorage）、滚动出现动画
 scripts/check-links.mjs
 ```
 

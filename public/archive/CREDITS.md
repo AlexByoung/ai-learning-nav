@@ -1,0 +1,9 @@
+# Picture credits
+
+Archival pictures used on the site, found with tasteskill `assets.mjs` in open collections.
+
+- `apps.jpg`: [IBM 704 Computer Operations (LRC-1957-B701 P-05391)](https://commons.wikimedia.org/wiki/File:IBM_704_Computer_Operations_(LRC-1957-B701_P-05391).tiff), NASA Langley Research Center / NACA, Taub, Taken on 16 December 1957. Licence: [public domain](https://creativecommons.org/publicdomain/mark/1.0/), via Wikimedia Commons.
+- `agents.jpg`: [Shakey the Robot (developed between 1966-1972 at SRI International) - Computer History Museum (2007-11-10 23.16.01 by Carlo Nardone)](https://commons.wikimedia.org/wiki/File:Shakey_the_Robot_(developed_between_1966-1972_at_SRI_International)_-_Computer_History_Museum_(2007-11-10_23.16.01_by_Carlo_Nardone).jpg), Carlo Nardone from Roma, Italy, 2007-11-10. Licence: [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0), via Wikimedia Commons.
+- `llm.jpg`: [Hollerith Punched Card](https://commons.wikimedia.org/wiki/File:Hollerith_Punched_Card.jpg), Unknown author Unknown author, 1895. Licence: [public domain](https://creativecommons.org/publicdomain/mark/1.0/), via Wikimedia Commons.
+- `foundations.jpg`: [Mark I Perceptron, Figure 2 of operator's manual](https://commons.wikimedia.org/wiki/File:Mark_I_Perceptron,_Figure_2_of_operator%27s_manual.png), John C. Hay, Albert E. Murray, 1960-02-15. Licence: [public domain](https://creativecommons.org/publicdomain/mark/1.0/), via Wikimedia Commons.
+- `infra.jpg`: [Glen Beck and Betty Snyder program the ENIAC in building 328 at the Ballistic Research Laboratory](https://commons.wikimedia.org/wiki/File:Glen_Beck_and_Betty_Snyder_program_the_ENIAC_in_building_328_at_the_Ballistic_Research_Laboratory.jpg), Unknown author Unknown author, circa 1947. Licence: [public domain](https://creativecommons.org/publicdomain/mark/1.0/), via Wikimedia Commons.

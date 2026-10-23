@@ -1,17 +1,17 @@
 # Third-party notices
 
-## Fuwari
+## tasteskill v2
 
-The visual design of this site (hue-driven oklch color tokens, card and button styles,
-navbar/banner layout, timeline and onload animation) is adapted from Fuwari and
-re-implemented in plain CSS in `src/styles/global.css` and the components under `src/`.
+The art direction (the "One motif" direction sheet: palette, type system, hero and section
+blueprints, house rules) was dealt by tasteskill v2 (`design-taste-frontend`), and parts of
+`src/styles/global.css` (reset, type steps, motion helpers) are adapted from its `assets/base.css`.
 
-Source: https://github.com/saicaca/fuwari
+Source: https://github.com/Leonxlnx/taste-skill
 
 ```
 MIT License
 
-Copyright (c) 2024 saicaca
+Copyright (c) 2026 Leonxlnx
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Material Symbols
+## General Sans
 
-Icons are rendered at build time from `@iconify-json/material-symbols`
-(Material Symbols by Google, Apache License 2.0).
+Typeface by the Indian Type Foundry, distributed by Fontshare (https://www.fontshare.com/fonts/general-sans)
+under the ITF Free Font License, which allows free personal and commercial use including web embedding.
+The woff2 files in `src/assets/fonts/` are self-hosted so the site makes no third-party font requests.
 
-## Roboto
+## Archival pictures
 
-Self-hosted via `@fontsource/roboto` (SIL Open Font License 1.1).
+The pictures in `public/archive/` come from open collections (Wikimedia Commons and others), each under
+the licence named in the site footer and in `public/archive/CREDITS.md`.

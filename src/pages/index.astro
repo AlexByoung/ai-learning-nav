@@ -1,319 +1,815 @@
 ---
 import Base from '../layouts/Base.astro';
-import Icon from '../components/Icon.astro';
+import LayerMark from '../components/LayerMark.astro';
 import { t } from '../i18n';
-import { CATEGORIES, CATEGORY_ICONS } from '../data/taxonomy';
+import { CATEGORIES } from '../data/taxonomy';
+import { pictures } from '../data/pictures';
 import { getCourses, getPaths } from '../lib/data';
 import { withBase } from '../lib/url';
 
 const courses = await getCourses();
 const paths = await getPaths();
-const featured = paths.find((p) => p.featured) ?? paths[0];
-const countBy = (cat: string) => courses.filter((c) => c.category === cat).length;
+const route = paths.find((p) => p.featured) ?? paths[0];
+const routeHref = withBase(`paths/${route.id}/`);
+const byLayer = CATEGORIES.map((layer) => ({ layer, courses: courses.filter((c) => c.category === layer) }));
+const pic = (layer: (typeof CATEGORIES)[number]) => ({ ...pictures[layer], src: withBase(pictures[layer].file) });
+
+// "Many into one" diagram: squares scattered in the left third, pulled into a ribbon in the middle,
+// laid out in rows in the right third. Deterministic so every build draws the same picture.
+let seed = 11;
+const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+const S = 12;
+const squares: { x: number; y: number; zone: 0 | 1 | 2 }[] = [];
+for (let i = 0; i < 48; i++) squares.push({ x: 10 + rand() * 360, y: 10 + rand() * 230, zone: 0 });
+for (let i = 0; i < 54; i++) squares.push({ x: 400 + (i % 18) * 18, y: 104 + Math.floor(i / 18) * 16, zone: 1 });
+for (let i = 0; i < 48; i++) squares.push({ x: 770 + (i % 8) * 20, y: 40 + Math.floor(i / 8) * 30, zone: 2 });
 ---
 
-<Base home>
-  <div class="stack">
-    {
-      featured && (
-        <section class="card-base path" aria-labelledby="path-title">
-          <div class="path-head">
-            <p class="bar-title">{t.home.pathTitle}</p>
-            <span
-              class="path-progress"
-              data-path-progress
-              data-course-ids={featured.courses.map((s) => s.course.id).join(',')}
-              data-template={t.paths.pathProgress('{done}', '{total}')}
-            >
-              {t.paths.pathProgress(0, featured.courses.length)}
+<Base>
+  <!-- Hero: printed card beside the layered picture -->
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="card">
+      <div class="band" aria-hidden="true">
+        {CATEGORIES.map((_, i) => <span class={`band-bar tone-${i + 1}`} />)}
+      </div>
+      <div class="card-body">
+        <h1 id="hero-title" class="display lines">
+          {t.home.titleLines.map((line, i) => (
+            <span class="line">
+              <span data-line style={`--i:${i}`}>{line}</span>
+            </span>
+          ))}
+        </h1>
+        <p class="hero-lead" data-rise style="--i:3">{t.home.lead}</p>
+        <a class="button" href={routeHref} data-rise style="--i:4">{t.nav.start}</a>
+      </div>
+      <ul class="card-links" aria-label={t.nav.label}>
+        <li><a class="link-plain" href="#layers">{t.home.links[0]}</a></li>
+        <li><a class="link-plain" href="#route">{t.home.links[1]}</a></li>
+        <li><a class="link-plain" href="#progress">{t.home.links[2]}</a></li>
+      </ul>
+    </div>
+
+    <figure class="stack" data-stack data-titles={CATEGORIES.map((l) => pictures[l].title).join('||')}>
+      {
+        CATEGORIES.map((layer, i) => (
+          <div class="slice" style={`--row:${i}`}>
+            {CATEGORIES.map((src, j) => (
+              <img
+                src={pic(src).src}
+                width={pic(src).width}
+                height={pic(src).height}
+                alt={i === 0 && j === 0 ? pic(src).alt : ''}
+                style={`object-position:${pic(src).focus}; --row:${i}`}
+                class:list={[{ on: j === 0 }]}
+                data-frame={j}
+                fetchpriority={j === 0 ? 'high' : undefined}
+                loading={j === 0 ? undefined : 'lazy'}
+                decoding="async"
+              />
+            ))}
+            <span class:list={['slice-label', { lit: i === 0 }]} data-label={i}>
+              {t.layers[layer].short}
             </span>
           </div>
-          <h2 id="path-title" class="path-title">
-            <a href={withBase(`paths/${featured.id}/`)}>{featured.title}</a>
-          </h2>
-          <p class="text-75 path-desc">{featured.description}</p>
-          <ol class="timeline">
-            {featured.courses.map(({ course }, i) => (
-              <li>
-                <a class="tl-row" href={withBase(`paths/${featured.id}/#course-${course.id}`)}>
-                  <span class="tl-num text-50">{String(i + 1).padStart(2, '0')}</span>
-                  <span class="tl-dot" aria-hidden="true" />
-                  <span class="tl-title">{course.title}</span>
-                  <span class={`level-badge level-${course.level}`}>{t.levels[course.level]}</span>
-                </a>
+        ))
+      }
+      <figcaption class="small" data-caption>{pic('apps').title}</figcaption>
+    </figure>
+  </section>
+
+  <!-- Statement with inline thumbnails -->
+  <section class="statement wrap" aria-label={t.home.listTitle}>
+    <p data-reveal>
+      {t.home.statement.a}<span class="thumb"><img src={pic('agents').src} alt="" width="160" height="64" loading="lazy" style={`object-position:${pic('agents').focus}`} /></span>{t.home.statement.b}<span class="thumb"><img src={pic('foundations').src} alt="" width="160" height="64" loading="lazy" style={`object-position:${pic('foundations').focus}`} /></span>{t.home.statement.c}<span class="thumb"><img src={pic('infra').src} alt="" width="160" height="64" loading="lazy" style={`object-position:${pic('infra').focus}`} /></span>{t.home.statement.d}
+    </p>
+  </section>
+
+  <!-- Two-column menu: the five layers and their courses -->
+  <section class="menu field wrap" id="layers" aria-labelledby="layers-title">
+    <h2 id="layers-title" class="head" data-reveal>{t.home.listTitle}</h2>
+    {
+      byLayer.map(({ layer, courses: list }) => (
+        <section class="layer" aria-labelledby={`layer-${layer}`}>
+          <div class="layer-head" data-reveal>
+            <h3 id={`layer-${layer}`}>{t.layers[layer].name}</h3>
+            <span class="layer-count nums">{t.home.layerCount(list.length)}</span>
+          </div>
+          <p class="layer-depth">{t.layers[layer].depth}</p>
+          <ul class="items">
+            {list.map((c, i) => (
+              <li class="item" data-reveal style={`--i:${i}`} data-course-id={c.id}>
+                <LayerMark layer={layer} class="item-mark" />
+                <div class="item-body">
+                  <p class="item-line">
+                    <a class="item-name link" href={withBase(`courses/#course-${c.id}`)}>
+                      {c.title}
+                    </a>
+                    <span class="item-level">{t.levels[c.level]}</span>
+                  </p>
+                  <p class="item-provider">
+                    {c.provider}
+                    {c.term && `，${c.term}`}
+                  </p>
+                  <p class="item-summary">{c.summary_zh}</p>
+                  <p class="item-state" data-state-pill />
+                </div>
               </li>
             ))}
-          </ol>
-          <a class="btn-regular enter" href={withBase(`paths/${featured.id}/`)}>
-            {t.home.pathCta}
-            <Icon name="chevron-right-rounded" />
-          </a>
-        </section>
-      )
-    }
-
-    <section aria-labelledby="cat-title">
-      <div class="section-head">
-        <h2 id="cat-title" class="bar-title">{t.home.categoriesTitle}</h2>
-        <a class="all-link" href={withBase('courses/')}>{t.home.allCourses}<Icon name="chevron-right-rounded" /></a>
-      </div>
-      <ul class="cats">
-        {
-          CATEGORIES.map((key) => (
-            <li>
-              <a class="card-base cat" href={withBase(`courses/?category=${key}`)}>
-                <span class="cat-icon">
-                  <Icon name={CATEGORY_ICONS[key]} />
-                </span>
-                <span class="cat-body">
-                  <span class="cat-name">{t.categories[key].name}</span>
-                  <span class="cat-desc text-50">{t.categories[key].description}</span>
-                </span>
-                <span class="cat-count">{t.home.courseCount(countBy(key))}</span>
-              </a>
+            <li class:list={['layer-pic', { wide: list.length % 2 === 0 }]} data-slice aria-hidden="true">
+              <img src={pic(layer).src} width={pic(layer).width} height={pic(layer).height} alt="" loading="lazy" decoding="async" style={`object-position:${pic(layer).focus}`} />
             </li>
-          ))
-        }
-      </ul>
-    </section>
-  </div>
+          </ul>
+        </section>
+      ))
+    }
+  </section>
+
+  <!-- Many into one: ten courses become one route -->
+  <section class="route wrap" id="route" aria-labelledby="route-title">
+    <div class="route-head">
+      <h2 id="route-title" class="head" data-reveal>
+        {t.home.pathTitle[0]}<br />{t.home.pathTitle[1]}
+      </h2>
+      <p data-reveal style="--i:1">{t.home.pathLead}</p>
+    </div>
+    <svg class="many" viewBox="0 0 960 260" role="img" aria-label={t.home.pathSteps.map((s) => s.name).join('，')} data-slice>
+      {squares.map((s) => <rect x={s.x} y={s.y} width={S} height={S} class={`z${s.zone}`} />)}
+    </svg>
+    <ol class="route-words">
+      {
+        t.home.pathSteps.map((s, i) => (
+          <li data-reveal style={`--i:${i}`}>
+            <h3>{s.name}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <ol class="route-steps" aria-label={route.title}>
+      {
+        route.courses.map(({ course }, i) => (
+          <li data-reveal style={`--i:${i}`}>
+            <a href={withBase(`paths/${route.id}/#course-${course.id}`)}>
+              <LayerMark layer={course.category} />
+              <span class="step-name">{course.title}</span>
+              <span class="step-meta">
+                {t.layers[course.category].short}，{t.levels[course.level]}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    <a class="button route-cta" href={routeHref}>{t.home.pathCta}</a>
+  </section>
+
+  <!-- Stepped figure tiles: my progress, read from this browser -->
+  <section class="stats field wrap" id="progress" aria-labelledby="stats-title" data-progress-stats data-course-ids={courses.map((c) => c.id).join(',')}>
+    <div class="tile tile-done">
+      <p class="figure nums" data-progress-count="done">0</p>
+      <p class="tile-caption">{t.home.statsDone(courses.length)}</p>
+      <div class="tile-foot">
+        <p class="tile-next" data-next data-route={route.courses.map(({ course }) => `${course.id}::${course.title}`).join('||')} data-template={t.home.next('{title}')} data-none={t.home.nextNone}>
+          {t.home.next(route.courses[0].course.title)}
+        </p>
+        <a class="tile-action" href={routeHref}>{t.home.pathCta}</a>
+      </div>
+    </div>
+    <h2 id="stats-title" class="stats-title">{t.home.statsTitle}</h2>
+    <div class="tile tile-doing">
+      <p class="figure nums" data-progress-count="doing">0</p>
+      <p class="tile-caption">{t.home.statsDoing}</p>
+    </div>
+    <div class="tile tile-want">
+      <p class="figure nums" data-progress-count="want">0</p>
+      <p class="tile-caption">{t.home.statsWant}</p>
+    </div>
+    <p class="stats-note">
+      {t.progress.storageNote}
+      <span data-storage-warning hidden>{t.progress.unavailable}</span>
+    </p>
+  </section>
 </Base>
 
+<script>
+  // Signature move: the picture descends through the layers. Every few seconds the next archival
+  // photograph crossfades in behind the five slices, and the lit label moves one layer down.
+  const stack = document.querySelector<HTMLElement>('[data-stack]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  if (stack && !reduce.matches) {
+    const frames = 5;
+    const caption = stack.querySelector<HTMLElement>('[data-caption]');
+    const titles = (stack.dataset.titles ?? '').split('||');
+    let current = 0;
+    let timer: number | undefined;
+    const step = () => {
+      current = (current + 1) % frames;
+      stack.querySelectorAll<HTMLImageElement>('img[data-frame]').forEach((img) => {
+        img.classList.toggle('on', Number(img.dataset.frame) === current);
+      });
+      stack.querySelectorAll<HTMLElement>('[data-label]').forEach((label) => {
+        label.classList.toggle('lit', Number(label.dataset.label) === current);
+      });
+      if (caption && titles[current]) caption.textContent = titles[current];
+    };
+    const start = () => {
+      if (timer === undefined) timer = window.setInterval(step, 5600);
+    };
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    start();
+  }
+</script>
+
 <style>
-  .stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .path {
-    position: relative;
-    padding: 1.5rem 1.5rem 1.25rem;
-  }
-
-  .path-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .path-head .bar-title {
-    font-size: 0.95rem;
-    color: var(--primary);
-  }
-
-  .path-progress {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--btn-content);
-    background: var(--btn-regular-bg);
-    padding: 0.1rem 0.6rem;
-    border-radius: 0.4rem;
-  }
-
-  .path-title {
-    font-size: clamp(1.4rem, 3vw, 1.85rem);
-    font-weight: 700;
-  }
-
-  .path-title a {
-    color: var(--text-90);
-    transition: color 0.15s ease;
-  }
-
-  .path-title a:hover {
-    color: var(--primary);
-  }
-
-  .path-desc {
-    margin: 0.5rem 0 1rem;
-    max-width: 46rem;
-  }
-
-  /* Timeline adapted from Fuwari's archive panel: dashed rail with dots that grow on hover. */
-  .timeline {
-    list-style: none;
-    margin: 0 0 1rem;
-    padding: 0;
-  }
-
-  .tl-row {
-    display: grid;
-    grid-template-columns: 2rem 2rem minmax(0, 1fr) auto;
-    align-items: center;
-    min-height: 2.75rem;
-    border-radius: 0.6rem;
-    color: var(--text-75);
-    transition: background-color 0.15s ease;
-  }
-
-  .tl-row:hover {
-    background: var(--btn-plain-bg-hover);
-  }
-
-  .tl-num {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-align: right;
-  }
-
-  .tl-dot {
-    position: relative;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .tl-dot::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: calc(50% - 1px);
-    border-left: 2px dashed var(--line-color);
-  }
-
-  .tl-dot::after {
-    content: '';
-    position: relative;
-    width: 6px;
-    height: 6px;
-    border-radius: 6px;
-    background: oklch(0.6 0.06 var(--hue));
-    outline: 4px solid var(--card-bg);
-    transition: height 0.15s ease, background-color 0.15s ease, outline-color 0.15s ease;
-  }
-
-  .tl-row:hover .tl-dot::after {
-    height: 1.25rem;
-    background: var(--primary);
-    outline-color: var(--btn-plain-bg-hover);
-  }
-
-  .tl-title {
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 0.75rem;
-    transition: transform 0.15s ease, color 0.15s ease;
-  }
-
-  .tl-row:hover .tl-title {
-    color: var(--primary);
-    transform: translateX(4px);
-  }
-
-  .tl-row .level-badge {
-    margin-right: 0.5rem;
-  }
-
-  .enter {
-    height: 2.5rem;
-    padding: 0 0.6rem 0 1rem;
-    border-radius: 0.6rem;
-    font-weight: 700;
-    font-size: 0.9rem;
-  }
-
-  .enter :global(svg) {
-    font-size: 1.4rem;
-  }
-
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 0.25rem 0.75rem;
-  }
-
-  .all-link {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-
-  .cats {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  /* ---------- hero ---------- */
+  .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
+    gap: 12px;
+    padding-top: 0.25rem;
   }
 
-  @media (min-width: 640px) {
-    .cats {
+  @media (min-width: 64em) {
+    .hero {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      min-height: calc(100svh - 4.75rem);
+    }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--field);
+    color: var(--field-ink);
+    order: 2;
+  }
+
+  @media (min-width: 64em) {
+    .card {
+      order: 0;
+    }
+  }
+
+  .band {
+    display: grid;
+    gap: 4px;
+    padding: 0;
+  }
+
+  .band-bar {
+    height: 8px;
+  }
+
+  .tone-1 {
+    background: var(--layer-1);
+  }
+
+  .tone-2 {
+    background: var(--layer-2);
+  }
+
+  .tone-3 {
+    background: var(--layer-3);
+  }
+
+  .tone-4 {
+    background: var(--layer-4);
+  }
+
+  .tone-5 {
+    background: var(--accent);
+  }
+
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(2.5rem, 6vw, 4rem) clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .card-body h1 {
+    font-size: var(--step-display);
+  }
+
+  .hero-lead {
+    margin-top: 2rem;
+    max-width: 26ch;
+    font-size: var(--step-lead);
+    line-height: 1.35;
+  }
+
+  .card-body .button {
+    margin-top: 2rem;
+  }
+
+  .card-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.75rem;
+    padding: 0 1rem 1.75rem;
+  }
+
+  .card-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .stack {
+    position: relative;
+    display: grid;
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    height: 48svh;
+    min-height: 20rem;
+  }
+
+  @media (min-width: 64em) {
+    .stack {
+      position: sticky;
+      top: 1rem;
+      height: auto;
+      max-height: calc(100svh - 2rem);
+    }
+  }
+
+  .slice {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  /* Each slice shows its own fifth of one picture, so the five together read as one photograph. */
+  .slice img {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: calc(500% + 16px);
+    top: calc(var(--row) * (-100% - 4px));
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05) brightness(0.9);
+    opacity: 0;
+    transition: opacity 1600ms ease;
+  }
+
+  .slice img.on {
+    opacity: 1;
+  }
+
+  .slice-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0.35rem 0.7rem;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: var(--step-small);
+    transition:
+      background-color 600ms ease,
+      color 600ms ease;
+  }
+
+  .slice-label.lit {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .stack figcaption {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0.35rem 0.7rem;
+    background: var(--bg);
+    color: var(--muted);
+    max-width: 70%;
+  }
+
+  /* ---------- statement ---------- */
+  .statement {
+    display: flex;
+    justify-content: center;
+    padding-block: clamp(6rem, 22vh, 14rem);
+  }
+
+  .statement p {
+    max-width: 24em;
+    font-size: var(--step-statement);
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .thumb {
+    display: inline-block;
+    width: 2.2em;
+    height: 0.85em;
+    margin: 0 0.15em;
+    vertical-align: -0.08em;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  @media (max-width: 40em) {
+    .statement p {
+      text-align: left;
+    }
+  }
+
+  /* ---------- menu ---------- */
+  .menu {
+    padding-block: clamp(5rem, 10vw, 9rem);
+  }
+
+  .layer {
+    margin-top: clamp(5rem, 9vw, 8rem);
+  }
+
+  .layer-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .layer-head h3 {
+    font-size: var(--step-statement);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .layer-count {
+    flex: none;
+    color: var(--field-muted);
+  }
+
+  .layer-depth {
+    margin-top: 0.5rem;
+    color: var(--field-muted);
+  }
+
+  .items {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.25rem 4rem;
+    margin-top: 2.5rem;
+  }
+
+  @media (min-width: 48em) {
+    .items {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  .cat {
+  .item {
     display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    height: 100%;
-    padding: 1rem;
-    color: var(--text-90);
-    transition: background-color 0.15s ease, transform 0.15s ease;
+    gap: 1.25rem;
+    align-items: flex-start;
   }
 
-  .cat:hover {
-    background: var(--btn-card-bg-hover);
+  .item :global(.item-mark) {
+    width: 2.5rem;
+    margin-top: 0.3rem;
+    color: var(--field-ink);
   }
 
-  .cat:active {
-    transform: scale(0.98);
+  .item-body {
+    flex: 1;
+    min-width: 0;
   }
 
-  .cat-icon {
+  .item-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: none;
+  }
+
+  .item-name {
+    font-weight: 700;
+    line-height: 1.3;
+    text-decoration-color: var(--accent);
+  }
+
+  .item-level {
     flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.8rem;
-    background: var(--btn-regular-bg);
-    color: var(--btn-content);
-    font-size: 1.6rem;
   }
 
-  .cat-body {
+  .item-provider {
+    margin-top: 0.25rem;
+    color: var(--field-muted);
+  }
+
+  .item-summary {
+    margin-top: 0.5rem;
+    max-width: 44ch;
+  }
+
+  .layer-pic {
+    align-self: stretch;
+    min-height: 9rem;
+    overflow: clip;
+    background: var(--field-surface);
+  }
+
+  .layer-pic.wide {
+    grid-column: 1 / -1;
+    height: clamp(8rem, 16vw, 13rem);
+  }
+
+  .layer-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  .item-state {
+    margin-top: 0.5rem;
+    font-weight: 700;
+  }
+
+  .item-state:empty {
+    display: none;
+  }
+
+  /* ---------- route ---------- */
+  .route {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: clamp(6rem, 12vw, 12rem);
+  }
+
+  .route-head {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 64em) {
+    .route-head {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--gutter);
+      align-items: end;
+    }
+    .route-head h2 {
+      grid-column: 1 / span 5;
+    }
+    .route-head p {
+      grid-column: 7 / span 5;
+    }
+  }
+
+  .many {
+    width: 100%;
+    height: auto;
+    margin-top: 4rem;
+  }
+
+  .many .z0 {
+    fill: var(--layer-4);
+  }
+
+  .many rect.z0:nth-child(3n) {
+    fill: var(--layer-3);
+  }
+
+  .many .z1 {
+    fill: var(--layer-2);
+  }
+
+  .many .z2 {
+    fill: var(--accent);
+  }
+
+  .route-words {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem var(--gutter);
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 48em) {
+    .route-words {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .route-words h3 {
+    font-size: var(--step-lead);
+  }
+
+  .route-words p {
+    margin-top: 0.4rem;
+  }
+
+  .route-steps {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    margin-top: 4rem;
+  }
+
+  @media (min-width: 48em) {
+    .route-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 80em) {
+    .route-steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .route-steps a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.25rem 1rem;
+    height: 100%;
+    padding: 1.25rem;
+    background: var(--surface);
+    text-decoration: none;
+    transition: background-color var(--t-hover) ease;
+  }
+
+  .route-steps :global(.layer-mark) {
+    grid-row: span 2;
+    width: 1.75rem;
+    margin-top: 0.2rem;
+    color: var(--ink);
+  }
+
+  .step-name {
+    font-weight: 700;
+  }
+
+  .step-meta {
+    color: var(--muted);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .route-steps a:hover {
+      background: var(--surface-2);
+    }
+  }
+
+  .route-cta {
+    justify-self: start;
+    margin-top: 2.5rem;
+  }
+
+  /* ---------- stats ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding-block: clamp(4rem, 8vw, 7rem) clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .stats-title {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    font-size: var(--step-statement);
+    margin-bottom: 1rem;
+  }
+
+  .tile {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    flex: 1;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.75rem;
   }
 
-  .cat-name {
+  .tile-done {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 52vw;
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .tile-doing {
+    grid-row: 3;
+    min-height: 34vw;
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .tile-want {
+    grid-row: 3;
+    margin-top: 2rem;
+    min-height: 30vw;
+    background: var(--layer-3);
+    color: var(--bg);
+  }
+
+  .figure {
+    font-size: var(--step-display);
     font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
   }
 
-  .cat-desc {
-    font-size: 0.85rem;
+  .tile-caption {
+    font-weight: 500;
+    margin-top: -0.5rem;
   }
 
-  .cat-count {
-    flex: none;
-    font-size: 0.8rem;
+  .tile-done {
+    justify-content: flex-start;
+  }
+
+  .tile-done .tile-foot {
+    margin-top: auto;
+  }
+
+  .tile-next {
+    font-size: var(--step-statement);
     font-weight: 700;
-    color: var(--btn-content);
-    background: var(--btn-regular-bg);
-    padding: 0.15rem 0.55rem;
-    border-radius: 0.4rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    max-width: 18ch;
   }
 
-  @media (max-width: 480px) {
-    .path {
-      padding: 1.25rem 1rem 1rem;
+  .tile-action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 3rem;
+    margin-top: 1.25rem;
+    padding: 0 1.4rem;
+    background: var(--accent-ink);
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform var(--t-press) var(--ease-out);
+  }
+
+  .tile-action:active {
+    transform: scale(0.97);
+  }
+
+  .stats-note {
+    grid-column: 1 / -1;
+    margin-top: 1.5rem;
+    color: var(--field-muted);
+  }
+
+  @media (min-width: 64em) {
+    .stats {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: auto auto;
+      column-gap: 8px;
+      row-gap: 0;
     }
-    .tl-row {
-      grid-template-columns: 1.5rem 1.75rem minmax(0, 1fr) auto;
+    .tile-done {
+      grid-column: 1 / span 6;
+      grid-row: 1 / span 2;
+      min-height: 48vh;
+    }
+    .stats-title {
+      grid-column: 7 / span 6;
+      grid-row: 1;
+      align-self: end;
+      height: 12vh;
+      margin: 0;
+      padding-left: 0.25rem;
+      display: flex;
+      align-items: center;
+    }
+    .tile-doing {
+      grid-column: 7 / span 3;
+      grid-row: 2;
+      align-self: start;
+      min-height: 34vh;
+    }
+    .tile-want {
+      grid-column: 10 / span 3;
+      grid-row: 2;
+      align-self: start;
+      margin-top: 9vh;
+      min-height: 25vh;
+    }
+    .stats-note {
+      grid-column: 7 / span 6;
+      grid-row: 3;
     }
   }
 </style>

@@ -151,3 +151,7 @@ vite.config.ts.timestamp-*
 # Link checker output
 link-report.md
 .lycheecache
+
+# tasteskill working files (keep the dealt direction sheet only)
+.taste-skill/*
+!.taste-skill/direction.json

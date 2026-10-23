@@ -1,28 +1,27 @@
 ---
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 import '../styles/global.css';
-import Banner from '../components/Banner.astro';
-import Icon from '../components/Icon.astro';
-import Sidebar from '../components/Sidebar.astro';
 import { t } from '../i18n';
 import { withBase } from '../lib/url';
+import { credits } from '../data/pictures';
 
 interface Props {
   title?: string;
   description?: string;
-  home?: boolean;
 }
 
-const { title, description = t.site.tagline, home = false } = Astro.props;
-const fullTitle = title ? `${title} · ${t.site.name}` : t.site.name;
+const { title, description = t.site.description } = Astro.props;
+const fullTitle = title ? `${title}｜${t.site.name}` : t.site.name;
 const current = Astro.url.pathname;
 const nav = [
-  { href: withBase(''), label: t.nav.home, icon: 'home-outline-rounded', active: current === withBase('') },
-  { href: withBase('courses/'), label: t.nav.courses, icon: 'auto-stories-outline-rounded', active: current.startsWith(withBase('courses/')) },
-  { href: withBase('paths/'), label: t.nav.paths, icon: 'route-outline', active: current.startsWith(withBase('paths/')) },
+  { href: withBase('courses/'), label: t.nav.courses },
+  { href: withBase('paths/'), label: t.nav.paths },
 ];
+const startHref = withBase('paths/agent-user-to-internals/');
+
+// Footer mark: each character of the name knocked out of its own block; heights step like a stack.
+const markChars = ['A', 'I', '学', '习', '导', '航'];
+const markHeights = [100, 78, 92, 64, 86, 72];
+const markTones = ['accent', 'ink', 'layer-2', 'ink', 'layer-3', 'layer-1'];
 ---
 
 <!doctype html>
@@ -32,416 +31,282 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="theme-color" content="#18191b" />
     <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
     <title>{fullTitle}</title>
-    <script is:inline>
-      // Apply saved theme + hue before first paint to avoid a flash.
-      try {
-        var d = document.documentElement;
-        var theme = localStorage.getItem('ai-learning-nav:theme');
-        if (theme === 'light' || theme === 'dark') d.dataset.theme = theme;
-        var hue = localStorage.getItem('ai-learning-nav:hue');
-        if (hue !== null && /^\d{1,3}$/.test(hue)) d.style.setProperty('--hue', hue);
-      } catch (e) {}
-    </script>
+    <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
-  <body class:list={{ 'is-home': home }}>
-    <a class="skip-link" href="#main">{t.nav.skip}</a>
-    <Banner home={home} />
-
-    <header class="top-row">
-      <div class="navbar card-base onload-animation">
-        <a class="brand btn-plain" href={withBase('')}>
-          <Icon name="school-outline-rounded" class="brand-icon" />
-          <span class="brand-text">{t.site.name}</span>
-        </a>
-        <nav aria-label={t.nav.menuLabel}>
-          {
-            nav.map((item) => (
-              <a class="btn-plain nav-link" href={item.href} aria-current={item.active ? 'page' : undefined}>
-                <Icon name={item.icon} class="nav-icon" />
-                <span>{item.label}</span>
-              </a>
-            ))
-          }
-        </nav>
-        <div class="tools">
-          <button class="btn-plain tool" type="button" data-hue-toggle aria-label={t.theme.hueLabel} aria-expanded="false" aria-controls="hue-panel">
-            <Icon name="palette-outline" />
-          </button>
-          <button
-            class="btn-plain tool"
-            type="button"
-            data-theme-toggle
-            data-label-auto={t.theme.auto}
-            data-label-light={t.theme.light}
-            data-label-dark={t.theme.dark}
-            data-label-base={t.theme.label}
-            aria-label={`${t.theme.label}：${t.theme.auto}`}
-            title={t.theme.auto}
-          >
-            <span data-theme-icon="auto"><Icon name="brightness-auto-outline-rounded" /></span>
-            <span data-theme-icon="light" hidden><Icon name="light-mode-outline-rounded" /></span>
-            <span data-theme-icon="dark" hidden><Icon name="dark-mode-outline-rounded" /></span>
-          </button>
-        </div>
-        <div id="hue-panel" class="hue-panel" data-hue-panel hidden>
-          <div class="hue-head">
-            <span class="bar-title">{t.theme.hue}</span>
-            <button class="btn-regular hue-reset" type="button" data-hue-reset aria-label={t.theme.reset} title={t.theme.reset}>
-              <Icon name="restart-alt-rounded" />
-            </button>
-            <output class="hue-value" data-hue-value>165</output>
-          </div>
-          <input class="hue-slider" type="range" min="0" max="360" step="5" value="165" aria-label={t.theme.hue} data-hue-input />
-        </div>
-      </div>
+  <body>
+    <a class="skip" href="#main">{t.nav.skip}</a>
+    <header class="bar wrap">
+      <a class="brand" href={withBase('')} aria-label={t.site.name}>
+        <svg class="brand-mark" viewBox="0 0 24 29" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => <rect x="0" y={i * 6} width="24" height="5" class:list={[{ lit: i === 4 }]} />)}
+        </svg>
+        <span>{t.site.name}</span>
+      </a>
+      <nav aria-label={t.nav.label}>
+        {
+          nav.map((item) => (
+            <a class="link" href={item.href} aria-current={current.startsWith(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+      <a class="button bar-action" href={startHref}>{t.nav.start}</a>
     </header>
 
-    {
-      home && (
-        <div class="hero onload-animation">
-          <h1>{t.site.name}</h1>
-          <p>{t.site.tagline}</p>
-        </div>
-      )
-    }
+    <main id="main">
+      <slot />
+    </main>
 
-    <div class="page">
-      <div class="main-grid">
-        <main id="main" class="content onload-animation">
-          <slot />
-        </main>
-        <aside class="sidebar onload-animation">
-          <Sidebar />
-        </aside>
+    <footer class="foot wrap">
+      <div class="mark" aria-hidden="true">
+        {
+          markChars.map((ch, i) => (
+            <span class={`block tone-${markTones[i]}`} style={`--h:${markHeights[i]}%`}>
+              <span>{ch}</span>
+            </span>
+          ))
+        }
       </div>
-      <footer class="footer onload-animation">
-        <hr class="divider-dashed" />
-        <p>{t.site.disclaimer}</p>
-        <p>
-          {t.site.themeCredit} · <a href="https://github.com/AlexByoung/ai-learning-nav" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </p>
-      </footer>
-    </div>
+      <div class="foot-grid">
+        <div>
+          <h2 class="foot-title">{t.footer.pages}</h2>
+          <ul class="foot-list">
+            <li><a class="link" href={withBase('')}>{t.footer.home}</a></li>
+            <li><a class="link" href={withBase('courses/')}>{t.nav.courses}</a></li>
+            <li><a class="link" href={withBase('paths/')}>{t.nav.paths}</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="foot-title">{t.footer.data}</h2>
+          <ul class="foot-list">
+            <li><a class="link" href="https://github.com/AlexByoung/ai-learning-nav#新增一门课" target="_blank" rel="noopener noreferrer">{t.footer.readme}</a></li>
+            <li><a class="link" href="https://github.com/AlexByoung/ai-learning-nav" target="_blank" rel="noopener noreferrer">{t.footer.source}</a></li>
+          </ul>
+        </div>
+        <div class="foot-about">
+          <p>{t.site.disclaimer}</p>
+          <p>{t.progress.storageNote}</p>
+        </div>
+      </div>
+      {
+        credits.length > 0 && (
+          <p class="credits">
+            {t.footer.credits}：
+            {credits.map((c, i) => (
+              <>
+                {i > 0 && '；'}
+                <a class="link-plain" href={c.page} target="_blank" rel="noopener noreferrer">
+                  {c.title}
+                </a>
+                {c.byline}
+              </>
+            ))}
+            。
+          </p>
+        )
+      }
+      <div class="foot-last">
+        <p>© 2026 {t.site.name}</p>
+        <a class="button small-button" href="#main">{t.footer.top}</a>
+      </div>
+    </footer>
 
     <script>
-      import '../scripts/theme';
       import '../scripts/progress';
+      import '../scripts/reveal';
     </script>
   </body>
 </html>
 
 <style>
-  body {
-    position: relative;
-  }
-
-  .is-home {
-    --banner-height: 46vh;
-  }
-
-  .skip-link {
+  .skip {
     position: absolute;
-    left: 8px;
-    top: -60px;
-    z-index: 100;
-    padding: 8px 12px;
-    border-radius: 0.5rem;
-    background: var(--card-bg);
+    left: var(--margin);
+    top: -4rem;
+    z-index: 10;
+    padding: 0.75rem 1rem;
+    background: var(--accent);
+    color: var(--accent-ink);
   }
 
-  .skip-link:focus {
-    top: 8px;
+  .skip:focus {
+    top: 0.75rem;
   }
 
-  .top-row {
-    position: relative;
-    z-index: 50;
-    max-width: var(--page-width);
-    margin: 0 auto;
-  }
-
-  .navbar {
-    position: relative;
+  .bar {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    height: 4.5rem;
-    padding: 0 0.75rem;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    overflow: visible;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    min-height: 4.5rem;
   }
 
   .brand {
-    height: 3.25rem;
-    padding: 0 0.9rem;
-    border-radius: 0.6rem;
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     margin-right: auto;
+    font-weight: 700;
+    text-decoration: none;
   }
 
-  .brand :global(.brand-icon) {
-    font-size: 1.6rem;
+  .brand-mark {
+    width: 1.35rem;
   }
 
-  .brand:hover {
-    color: var(--primary);
+  .brand-mark rect {
+    fill: var(--ink);
+  }
+
+  .brand-mark rect.lit {
+    fill: var(--accent);
   }
 
   nav {
     display: flex;
-    gap: 0.25rem;
+    gap: clamp(1rem, 2.5vw, 2rem);
   }
 
-  .nav-link {
-    height: 2.75rem;
-    padding: 0 1rem;
-    border-radius: 0.6rem;
-    font-weight: 700;
-  }
-
-  .nav-link :global(.nav-icon) {
-    display: none;
-    font-size: 1.3rem;
-  }
-
-  .tools {
-    display: flex;
-    margin-left: 0.25rem;
-  }
-
-  .tool {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 0.6rem;
-    font-size: 1.25rem;
-  }
-
-  .tool span {
-    display: inline-flex;
-  }
-
-  .tool span[hidden] {
-    display: none;
-  }
-
-  .hue-panel {
-    position: absolute;
-    right: 0.75rem;
-    top: calc(100% + 0.5rem);
-    width: min(20rem, calc(100vw - 2rem));
-    padding: 1rem;
-    border-radius: var(--radius-large);
-    background: var(--float-panel-bg);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  }
-
-  .hue-head {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .hue-head .bar-title {
-    margin-left: 0.25rem;
-    margin-right: auto;
-    font-size: 1rem;
-  }
-
-  .hue-reset {
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 0.4rem;
-  }
-
-  .hue-value {
-    min-width: 2.75rem;
-    height: 1.75rem;
-    border-radius: 0.4rem;
+  nav a {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
-    background: var(--btn-regular-bg);
-    color: var(--btn-content);
+    min-height: 2.75rem;
+    text-decoration: none;
   }
 
-  .hue-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 1.5rem;
-    margin: 0;
-    border-radius: 0.3rem;
-    background: var(--rainbow);
-    cursor: pointer;
+  nav a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
   }
 
-  .hue-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 0.5rem;
-    height: 1rem;
-    border-radius: 0.125rem;
-    background: rgb(255 255 255 / 0.8);
+  .bar-action {
+    min-height: 2.75rem;
   }
 
-  .hue-slider::-moz-range-thumb {
-    width: 0.5rem;
-    height: 1rem;
-    border: 0;
-    border-radius: 0.125rem;
-    background: rgb(255 255 255 / 0.8);
+  @media (max-width: 30em) {
+    .brand span {
+      display: none;
+    }
+    .bar-action {
+      padding: 0 1rem;
+    }
   }
 
-  .hero {
-    position: relative;
-    z-index: 10;
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    height: calc(var(--banner-height) - 4.5rem - var(--overlap));
-    min-height: 8rem;
+  .foot {
+    padding-top: clamp(3rem, 6vw, 5rem);
+    padding-bottom: 2rem;
+  }
+
+  .mark {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    color: #fff;
-    text-shadow: 0 2px 12px rgb(0 0 0 / 0.18);
+    align-items: flex-end;
+    gap: 4px;
+    height: clamp(7rem, 24svh, 15rem);
   }
 
-  .hero h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
+  .block {
+    flex: 1;
+    height: var(--h);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 0 0.04em 0.08em;
+    font-size: clamp(3rem, 9vw, 9.5rem);
     font-weight: 700;
-    letter-spacing: 0.02em;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    color: var(--bg);
+    overflow: hidden;
   }
 
-  .hero p {
-    margin-top: 0.5rem;
-    max-width: 42rem;
-    font-size: clamp(1rem, 2.2vw, 1.15rem);
-    opacity: 0.92;
+  .tone-accent {
+    background: var(--accent);
   }
 
-  .page {
-    position: relative;
-    z-index: 20;
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 0 0 2rem;
+  .tone-ink {
+    background: var(--ink);
   }
 
-  body:not(.is-home) .page {
-    padding-top: max(calc(var(--banner-height) - 4.5rem - var(--overlap)), 1.5rem);
+  .tone-layer-1 {
+    background: var(--layer-1);
   }
 
-  .main-grid {
+  .tone-layer-2 {
+    background: var(--layer-2);
+  }
+
+  .tone-layer-3 {
+    background: var(--layer-3);
+  }
+
+  .foot-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem var(--gutter);
+    margin-top: 3.5rem;
   }
 
-  .sidebar {
-    animation-delay: 100ms;
+  .foot-about {
+    grid-column: 1 / -1;
   }
 
-  .content {
-    animation-delay: 150ms;
-    min-width: 0;
+  @media (min-width: 64em) {
+    .foot-grid {
+      grid-template-columns: 2fr 2fr 4fr 4fr;
+    }
+    .foot-about {
+      grid-column: 4;
+    }
   }
 
-  .footer {
-    animation-delay: 250ms;
-    margin-top: 2rem;
-    padding: 0 1rem;
-    text-align: center;
-    font-size: 0.85rem;
-    color: var(--text-50);
+  .foot-title {
+    font-size: var(--step-small);
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
   }
 
-  .footer hr {
-    margin-bottom: 1.25rem;
-  }
-
-  .footer p + p {
+  .foot-list li + li {
     margin-top: 0.25rem;
   }
 
-  .footer a {
-    color: var(--text-75);
+  .foot-list a {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
   }
 
-  .footer a:hover {
-    color: var(--primary);
+  .foot-about p + p {
+    margin-top: 0.75rem;
   }
 
-  @media (max-width: 767px) {
-    .hero,
-    .page {
-      padding-left: 0.75rem;
-      padding-right: 0.75rem;
-    }
+  .foot-about p,
+  .credits {
+    color: var(--muted);
   }
 
-  @media (min-width: 768px) {
-    .top-row,
-    .hero,
-    .page {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-    .hero {
-      padding-left: 2rem;
-    }
+  .credits {
+    margin-top: 3rem;
+    max-width: 62ch;
   }
 
-  @media (min-width: 1024px) {
-    .main-grid {
-      grid-template-columns: 17.5rem minmax(0, 1fr);
-    }
-    .sidebar {
-      grid-row: 1;
-      grid-column: 1;
-    }
-    .content {
-      grid-column: 2;
-    }
-    .sidebar :global(.sidebar-inner) {
-      position: sticky;
-      top: 1rem;
-    }
+  .credits a {
+    color: var(--ink);
   }
 
-  @media (max-width: 640px) {
-    .navbar {
-      padding: 0 0.5rem;
-      height: 4rem;
-    }
-    .brand {
-      padding: 0 0.6rem;
-    }
-    .nav-link {
-      padding: 0 0.7rem;
-    }
+  .foot-last {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    color: var(--muted);
   }
 
-  @media (max-width: 480px) {
-    .brand-text {
-      display: none;
-    }
-    .nav-link {
-      width: 2.75rem;
-      padding: 0;
-    }
-    .nav-link span {
-      display: none;
-    }
-    .nav-link :global(.nav-icon) {
-      display: inline-block;
-    }
+  .small-button {
+    min-height: 2.75rem;
+    padding: 0 1rem;
   }
 </style>

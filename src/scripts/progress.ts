@@ -34,47 +34,47 @@ function save(map: ProgressMap) {
 let progress = load();
 
 function render() {
-  // Card buttons
+  // Every element that represents a course: its state attribute and its state label.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-course-id]')) {
+    const state = progress[el.dataset.courseId!];
+    if (state) el.dataset.progress = state;
+    else delete el.dataset.progress;
+    const pill = el.querySelector<HTMLElement>('[data-state-pill]');
+    if (pill) pill.textContent = state ? t.progress.states[state] : '';
+  }
+
+  // The three buttons on each course row.
   for (const group of document.querySelectorAll<HTMLElement>('[data-progress-for]')) {
-    const id = group.dataset.progressFor!;
-    const state = progress[id];
+    const state = progress[group.dataset.progressFor!];
     for (const btn of group.querySelectorAll<HTMLButtonElement>('button[data-state]')) {
       btn.setAttribute('aria-pressed', String(btn.dataset.state === state));
     }
-    const card = group.closest<HTMLElement>('[data-course-id]');
-    if (card) {
-      if (state) card.dataset.progress = state;
-      else delete card.dataset.progress;
-      const pill = card.querySelector<HTMLElement>('[data-state-pill]');
-      if (pill) pill.textContent = state ? t.progress.states[state] : '';
-    }
   }
 
-  // Home page totals
-  const counts = { want: 0, doing: 0, done: 0 };
+  // Totals, counted only over courses that exist on the site.
   const known = new Set(
     (document.querySelector<HTMLElement>('[data-progress-stats]')?.dataset.courseIds ?? '').split(',').filter(Boolean),
   );
+  const counts: Record<ProgressState, number> = { want: 0, doing: 0, done: 0 };
   for (const [id, state] of Object.entries(progress)) {
     if (known.size === 0 || known.has(id)) counts[state]++;
   }
   for (const el of document.querySelectorAll<HTMLElement>('[data-progress-count]')) {
     el.textContent = String(counts[el.dataset.progressCount as ProgressState] ?? 0);
   }
-  for (const el of document.querySelectorAll<HTMLElement>('[data-progress-bar]')) {
-    const total = Number(el.dataset.total) || 1;
-    const key = el.dataset.progressBar as ProgressState;
-    el.style.width = `${(counts[key] / total) * 100}%`;
-  }
-  const empty = document.querySelector<HTMLElement>('[data-progress-empty]');
-  if (empty) empty.hidden = counts.want + counts.doing + counts.done > 0;
 
-  // Path progress ("已学完 x / n")
+  // The next course on the route that is not done yet.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-next]')) {
+    const steps = (el.dataset.route ?? '').split('||').map((s) => s.split('::'));
+    const next = steps.find(([id]) => progress[id] !== 'done');
+    el.textContent = next ? (el.dataset.template ?? '').replace('{title}', next[1]) : (el.dataset.none ?? '');
+  }
+
+  // Route progress ("已学完 x / n").
   for (const el of document.querySelectorAll<HTMLElement>('[data-path-progress]')) {
     const ids = (el.dataset.courseIds ?? '').split(',').filter(Boolean);
     const done = ids.filter((id) => progress[id] === 'done').length;
-    const template = el.dataset.template ?? '{done} / {total}';
-    el.textContent = template.replace('{done}', String(done)).replace('{total}', String(ids.length));
+    el.textContent = (el.dataset.template ?? '{done} / {total}').replace('{done}', String(done)).replace('{total}', String(ids.length));
   }
 
   for (const el of document.querySelectorAll<HTMLElement>('[data-storage-warning]')) {
@@ -87,14 +87,14 @@ document.addEventListener('click', (event) => {
   if (!btn) return;
   const id = btn.closest<HTMLElement>('[data-progress-for]')!.dataset.progressFor!;
   const state = btn.dataset.state as ProgressState;
-  // Clicking the active state again clears it.
+  // Pressing the active state again clears it.
   if (progress[id] === state) delete progress[id];
   else progress[id] = state;
   save(progress);
   render();
 });
 
-// Keep multiple open tabs in sync.
+// Keep several open tabs in sync.
 window.addEventListener('storage', (event) => {
   if (event.key === KEY) {
     progress = load();
